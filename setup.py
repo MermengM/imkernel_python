@@ -5,9 +5,9 @@ setup(
     version="0.1.0",
     author="ermeng",
     author_email="ermeng@ermeng.fun",
-    description="A brief description of IMKernel",
-    long_description="A long description of IMKernel",
-    url="https://github.com/MermengM/im_kernel_python",
+    description="imkernel for python",
+    long_description="imkernel是基于三维四层统一模型（IM)理念以及工业语言(IL)构建的python类库",
+    url="https://github.com/MermengM/imkernel_python",
     packages=find_packages(),
     classifiers=[
         "Operating System :: OS Independent",
@@ -17,8 +17,8 @@ setup(
     python_requires=">=3.11",
     install_requires=[],
     license="GNU General Public License v3 or later (GPLv3+)",
-    keywords="IMKernel kernel image processing",
+    keywords="IMKernel kernel IM IL",
     project_urls={
-        "Bug Tracker": "https://github.com/MermengM/im_kernel_python/issues",
+        "Bug Tracker": "https://github.com/MermengM/imkernel_python/issues",
     },
 )

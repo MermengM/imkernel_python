@@ -9,7 +9,7 @@ import toml
 from loguru import logger
 from pydantic import InstanceOf
 
-from imkernel.im.object_unit import ObjectUnit
+from im.object_unit import ObjectUnit
 
 T = TypeVar("T")
 

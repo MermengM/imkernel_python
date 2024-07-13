@@ -9,10 +9,11 @@ from tracemalloc import stop
 from typing import Any, List, Optional, TypeVar, Union
 
 import toml
-from imkernel.im.method_parameter import MethodParameter
-from imkernel.im.method_unit import MethodUnit
 from loguru import logger
 from pydantic import InstanceOf
+
+from im.method_parameter import MethodParameter
+from im.method_unit import MethodUnit
 
 T = TypeVar("T")
 
