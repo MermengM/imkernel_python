@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, List, Optional, Union
 
-from imkernel.im.method_parameter import MethodParameter
+from im.method_parameter import MethodParameter
 
 
 @dataclass
