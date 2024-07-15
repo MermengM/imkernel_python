@@ -12,8 +12,8 @@ import toml
 from loguru import logger
 from pydantic import InstanceOf
 
-from im.method_parameter import MethodParameter
-from im.method_unit import MethodUnit
+from .method_parameter import MethodParameter
+from .method_unit import MethodUnit
 
 T = TypeVar("T")
 

@@ -1,24 +1,28 @@
 from dataclasses import dataclass, field
 from typing import Any, List, Optional, Union
 
-from im.object_parameter import ObjectParameter
+from .method_parameter import MethodParameter
 
 
 @dataclass
-class ObjectUnit:
+class MethodUnit:
     Name: str
+    MethodBody: str
     Category: Optional[str] = None
-    Parameter: List[ObjectParameter] = field(default_factory=list)
+    Parameter: List[MethodParameter] = field(default_factory=list)
     DataList: List[Any] = field(default_factory=list)
 
-    def __str__(self):
-        return f"单元:Name={self.Name}, Category={self.Category}"
+    def _get_call_dict(self):
+        call_dict = {"fun_name": self.Name, "script_path": self.MethodBody}
+        for param in self.Parameter:
+            call_dict[param.ParName] = param.Value
+        return call_dict
 
     def _generate_data_list(self):
         item = [x.Value for x in self.Parameter]
         self.DataList.append(item)
 
-    def add_parameter(self, par: Union[ObjectParameter, List[ObjectParameter]]):
+    def add_parameter(self, par: Union[MethodParameter, List[MethodParameter]]):
         if isinstance(par, list):
             self.Parameter.extend(par)
         else:

@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "imkernel"
+version = "0.1.1"
+authors = [
+    {name = "ermeng", email = "ermeng@ermeng.fun"},
+]
+description = "imkernel for python"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.11"
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+]
+keywords = ["IMKernel", "kernel", "IM", "IL"]
+
+[project.urls]
+"Homepage" = "https://github.com/MermengM/imkernel_python"
+"Bug Tracker" = "https://github.com/MermengM/imkernel_python/issues"
+
+[tool.setuptools]
+packages = ["imkernel"]

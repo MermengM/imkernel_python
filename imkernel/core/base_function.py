@@ -3,8 +3,9 @@ from typing import List
 
 import pandas
 import toml
-from imkernel.im import ObjectModel, ObjectParameter, ObjectUnit
 from loguru import logger
+
+from imkernel.model import ObjectModel, ObjectParameter, ObjectUnit
 
 
 def read_object_model(file_path: str) -> List[ObjectModel]:

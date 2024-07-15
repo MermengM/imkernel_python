@@ -1,6 +1,6 @@
-from im.object_model import ObjectModel
+import imkernel
 
 if __name__ == "__main__":
-    ObjectModel(Name="123")
+    ObjectModel = imkernel.model.ObjectModel(Name="123")
     print(ObjectModel)
 # end main
