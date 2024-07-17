@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "imkernel"
-version = "0.1.2"
+version = "0.1.24"
 authors = [
-    {name = "ermeng", email = "ermeng@ermeng.fun"},
+    { name = "ermeng", email = "ermeng@ermeng.fun" },
 ]
 description = "imkernel for python"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 requires-python = ">=3.11"
 classifiers = [
     "Operating System :: OS Independent",
@@ -19,9 +19,15 @@ classifiers = [
 ]
 keywords = ["IMKernel", "kernel", "IM", "IL"]
 
+dependencies = [
+    "toml",
+    "numpy",
+    "pandas"
+]
+
 [project.urls]
 "Homepage" = "https://github.com/MermengM/imkernel_python"
 "Bug Tracker" = "https://github.com/MermengM/imkernel_python/issues"
 
 [tool.setuptools]
-packages = ["imkernel"]
+packages = ["imkernel", "imkernel.model", "imkernel.core"]

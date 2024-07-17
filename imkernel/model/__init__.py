@@ -11,10 +11,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with imkernel.  If not, see <https://www.gnu.org/licenses/>.
+# imkernel/model/__init__.py
 
-from .method_model import MethodModel
-from .method_parameter import MethodParameter
-from .method_unit import MethodUnit
-from .object_model import ObjectModel
-from .object_parameter import ObjectParameter
-from .object_unit import ObjectUnit
+from .unit_model import UnitModel
+from .unit_object import UnitObject, UnitCategory
+from .unit_parameter import UnitParameter

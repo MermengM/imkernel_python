@@ -11,3 +11,4 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with imkernel.  If not, see <https://www.gnu.org/licenses/>.
+from .runtime_function import dynamic_method_call

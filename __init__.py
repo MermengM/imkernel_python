@@ -11,8 +11,3 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with imkernel.  If not, see <https://www.gnu.org/licenses/>.
-
-from . import imkernel, kernel
-from .imkernel import *
-
-# __all__ = ["objectmodel", "object_parameter", "other_module2"]  # 列出所有你想暴露的模块

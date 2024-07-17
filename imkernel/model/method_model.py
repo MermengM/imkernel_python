@@ -10,7 +10,6 @@ from typing import Any, List, Optional, TypeVar, Union
 
 import toml
 from loguru import logger
-from pydantic import InstanceOf
 
 from .method_parameter import MethodParameter
 from .method_unit import MethodUnit
@@ -31,9 +30,8 @@ class MethodModel:
         self.Unit.append(unit_layer)
 
     def to_imd(self) -> str:
-        imd_content = []
+        imd_content = [f"O,{self.Name}"]
         # 添加头部信息
-        imd_content.append(f"O,{self.Name}")
         # 添加单元信息
         for unit in self.Unit:
             r = unit.to_imd()
@@ -89,7 +87,7 @@ class MethodModel:
                         param_values = parts[2:]
                         if len(param_values) == len(u.Parameter):
                             for p, value in zip(u.Parameter, param_values):
-                                p.Value = value
+                                p.value = value
                             u._generate_data_list()
                         else:
                             logger.error("参数数量与单元定义不匹配,跳过!")

@@ -1,52 +1,51 @@
 import json
 from typing import List
 
-import pandas
 import toml
 from loguru import logger
 
-from imkernel.model import ObjectModel, ObjectParameter, ObjectUnit
+from imkernel.model import UnitModelold, UnitParameter, UnitObject
 
 
-def read_object_model(file_path: str) -> List[ObjectModel]:
+def read_object_model(file_path: str) -> List[UnitModelold]:
     """读入对象模型
 
     Args:
         file_path (str): 文件名
 
     Returns:
-        List[ObjectModel]: 对象模型
+        List[UnitModelold]: 对象模型
     """
 
     return_list = []
     data = toml.load(file_path)
-    object_model_list = data.get(ObjectModel.__name__)
+    object_model_list = data.get(UnitModelold.__name__)
     for objece_model_data in object_model_list:
         objectmodel_name = objece_model_data.get("Name")
         # objectmodel_category = objece_model_data.get('Category')
         unit_layers = objece_model_data.get("Unit", [])
 
-        object_model = ObjectModel(Name=objectmodel_name)
+        object_model = UnitModelold(Name=objectmodel_name)
         logger.info(f"解析到: {object_model}")
 
         # 读取单元层
         for unit_data in unit_layers:
-            unit_layer = ObjectUnit(
-                Name=unit_data["Name"], Category=unit_data["Category"]
+            unit_layer = UnitObject(
+                name=unit_data["Name"], category=unit_data["Category"]
             )
             logger.info(f"解析到: {unit_layer}")
 
             parameter_list = unit_data.get("Parameter", [])
             # 读取参数层
             for param_data in parameter_list:
-                param_layer = ObjectParameter(
-                    Name=param_data["Name"],
-                    ParName=param_data["ParName"],
-                    Type=param_data["Type"],
-                    Value="",
+                param_layer = UnitParameter(
+                    name=param_data["Name"],
+                    par_name=param_data["ParName"],
+                    value_type=param_data["Type"],
+                    value="",
                 )
                 logger.info(f"解析到: {param_layer}")
-                unit_layer.Parameter.append(param_layer)
+                unit_layer._parameters.append(param_layer)
 
             object_model.add_unit_layer(unit_layer)
 
@@ -54,33 +53,33 @@ def read_object_model(file_path: str) -> List[ObjectModel]:
     return return_list
 
 
-def write_object_model(file_path: str, object_models: List[ObjectModel]) -> None:
+def write_object_model(file_path: str, object_models: List[UnitModelold]) -> None:
     """
     写入对象模型
 
     Args:
         file_path (str): 写入文件名
-        object_models (List[ObjectModel]): 待写入模型
+        object_models (List[UnitModelold]): 待写入模型
     """
-    if isinstance(object_models, ObjectModel):
+    if isinstance(object_models, UnitModelold):
         object_models = [object_models]
 
-    def serialize_parameter_layer(param_layer: ObjectParameter) -> dict[str, any]:
+    def serialize_parameter_layer(param_layer: UnitParameter) -> dict[str, any]:
         return {
-            "Name": param_layer.Name,
-            "ParName": param_layer.ParName,
-            "Type": param_layer.Type,
-            "Value": param_layer.Value,
+            "Name": param_layer.name,
+            "ParName": param_layer.par_name,
+            "Type": param_layer.value_type,
+            "Value": param_layer.value,
         }
 
-    def serialize_unit_layer(unit_layer: ObjectUnit) -> dict[str, any]:
+    def serialize_unit_layer(unit_layer: UnitObject) -> dict[str, any]:
         return {
-            "Name": unit_layer.Name,
-            "Category": unit_layer.Category,
-            "Parameter": [serialize_parameter_layer(p) for p in unit_layer.Parameter],
+            "Name": unit_layer.name,
+            "Category": unit_layer.category,
+            "Parameter": [serialize_parameter_layer(p) for p in unit_layer._parameters],
         }
 
-    def serialize_object_model(object_model: ObjectModel) -> dict[str, any]:
+    def serialize_object_model(object_model: UnitModelold) -> dict[str, any]:
         return {
             "Name": object_model.Name,
             # "Category": object_model.Category,
@@ -92,18 +91,18 @@ def write_object_model(file_path: str, object_models: List[ObjectModel]) -> None
         toml.dump(data, toml_file)
 
 
-def update_object_model(json_data: str, object_unit: ObjectUnit):
+def update_object_model(json_data: str, object_unit: UnitObject):
     """使用数据更新对象模型
 
     Args:
         json_data (str): _description_
-        object_unit (ObjectUnit): _description_
+        object_unit (UnitObject): _description_
     """
     # 解析JSON数据
     data_list = json.loads(json_data)
 
     # 获取参数名列表
-    param_names = [param.ParName for param in object_unit.Parameter]
+    param_names = [param.par_name for param in object_unit._parameters]
 
     # 初始化DataList
     object_unit.DataList = []
