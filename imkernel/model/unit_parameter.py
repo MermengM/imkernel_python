@@ -18,14 +18,29 @@ class UnitParameter:
         is_object (bool): 是否为嵌套对象
     """
 
-    def __init__(self, name, par_name=None, value_type=None, value=None):
+    def __init__(self, name, par_name=None, value_type=None, value=None, is_object=False):
         self.name = name
         self.par_name = par_name
         self.value_type = value_type
-        self.value = value
-        self.real_data = self._deserialize(value)
-        self.array_data = self._deserialize(value)
-        self.is_object = self._check_if_object(value)
+        self._value = None
+        self.real_data = None
+        self.array_data = None
+        self.is_object = is_object
+        self.value = value  # 这里会触发setter方法
+
+    @property
+    def value(self):
+        if not self.is_object:
+            return self._value
+        else:
+            return self.array_data
+
+    @value.setter
+    def value(self, new_value):
+        self._value = new_value
+        # self.real_data = self._deserialize(new_value)
+        # self.array_data = self._deserialize(new_value)
+        self.is_object = self._check_if_object(new_value)
 
     @staticmethod
     def _check_if_object(value):
