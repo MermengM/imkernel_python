@@ -1,5 +1,6 @@
 from enum import Enum
 
+import pandas as pd
 from loguru import logger
 
 from .unit_parameter import UnitParameter
@@ -113,3 +114,18 @@ class UnitObject:
         else:
             r = None
         return r
+
+
+def unit_to_dict(unit):
+    data = {}
+    for name, param in unit._parameters.items():
+        if isinstance(param, UnitObject):
+            data[name] = unit_to_dict(param)
+        else:
+            data[name] = param.value
+    return data
+
+
+def unit_to_dataframe(unit):
+    data = unit_to_dict(unit)
+    return pd.DataFrame([data])
