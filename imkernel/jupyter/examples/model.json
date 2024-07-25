@@ -1,0 +1,68 @@
+{
+    "Model": {
+        "Element": {
+            "Blade": {
+                "BladeCross": {
+                    "BladePolyLine": {
+                        "ElevenParameters": {
+                            "Chord_Length": {},
+                            "Upper_Max_Width": {},
+                            "Upper_Max_Width_Loc": {},
+                            "Upper_Angle": {},
+                            "Upper_tip_coeff": {},
+                            "Upper_aft_part_shape": {},
+                            "Lower_max_width": {},
+                            "Lower_max_width_loc": {},
+                            "Lower_Angle": {},
+                            "Lower_tip_coef": {},
+                            "Lower_aft_part_shape": {},
+                            "Tangent_Leading_Edge": {}
+                        },
+                        "SectionPoints": {
+                            "x": {},
+                            "y": {},
+                            "z": {}
+                        },
+                        "CurvePonits": {
+                            "x": {},
+                            "y": {},
+                            "z": {}
+                        },
+                        "cpts": {
+                            "x": {},
+                            "y": {},
+                            "z": {}
+                        }
+                    }
+                },
+                "FinishingPoint": {
+                    "x": {},
+                    "y": {},
+                    "z": {},
+                    "i": {},
+                    "j": {},
+                    "k": {}
+                },
+                "ClosedBladeCross": {}
+            },
+            "Machine": {
+                "BasicParameters": {
+                    "MachineModel": {}
+                },
+                "MachiningParameters": {
+                    "FeedRate": {},
+                    "PathSpacing": {},
+                    "CuttingDepth": {},
+                    "SpindleSpeed": {},
+                    "ToolInclinationAngle": {},
+                    "ToolRakeAngle": {},
+                    "ToolSideAngle": {},
+                    "MachiningGCode": {}
+                }
+            },
+            "cutter": {}
+        },
+        "Funtion": {},
+        "Process": {}
+    }
+}
