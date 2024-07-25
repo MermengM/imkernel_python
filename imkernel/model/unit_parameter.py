@@ -4,7 +4,7 @@ from json import JSONDecodeError
 from loguru import logger
 
 
-class UnitParameter:
+class ElementParameter:
     """
     单元参数类。
 
@@ -40,12 +40,11 @@ class UnitParameter:
         self._value = new_value
         # self.real_data = self._deserialize(new_value)
         # self.array_data = self._deserialize(new_value)
-        self.is_object = self._check_if_object(new_value)
 
     @staticmethod
     def _check_if_object(value):
-        from .unit_object import UnitObject
-        return isinstance(value, UnitObject)
+        from .unit_object import Element
+        return isinstance(value, Element)
 
     def __str__(self):
         return f"对象模型参数: Name={self.name}, ParName={self.par_name}, Type={self.value_type}, Value={self.value}"
@@ -56,7 +55,9 @@ class UnitParameter:
                 "name": self.name,
                 "par_name": self.par_name,
                 "value_type": self.value_type,
-                "value": self.value.to_dict() if self.is_object else self.value
+                "value": (self.value.to_dict() if hasattr(self.value, 'to_dict') else
+                          vars(self.value) if hasattr(self.value, '__dict__') else
+                          str(self.value)) if self.value is not None else None
             }
         else:
             return {

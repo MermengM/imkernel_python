@@ -4,7 +4,7 @@ from typing import List
 import toml
 from loguru import logger
 
-from imkernel.model import UnitModelold, UnitParameter, UnitObject
+from imkernel.model import UnitModelold, ElementParameter, Element
 
 
 def read_object_model(file_path: str) -> List[UnitModelold]:
@@ -30,7 +30,7 @@ def read_object_model(file_path: str) -> List[UnitModelold]:
 
         # 读取单元层
         for unit_data in unit_layers:
-            unit_layer = UnitObject(
+            unit_layer = Element(
                 name=unit_data["Name"], category=unit_data["Category"]
             )
             logger.info(f"解析到: {unit_layer}")
@@ -38,7 +38,7 @@ def read_object_model(file_path: str) -> List[UnitModelold]:
             parameter_list = unit_data.get("Parameter", [])
             # 读取参数层
             for param_data in parameter_list:
-                param_layer = UnitParameter(
+                param_layer = ElementParameter(
                     name=param_data["Name"],
                     par_name=param_data["ParName"],
                     value_type=param_data["Type"],
@@ -64,7 +64,7 @@ def write_object_model(file_path: str, object_models: List[UnitModelold]) -> Non
     if isinstance(object_models, UnitModelold):
         object_models = [object_models]
 
-    def serialize_parameter_layer(param_layer: UnitParameter) -> dict[str, any]:
+    def serialize_parameter_layer(param_layer: ElementParameter) -> dict[str, any]:
         return {
             "Name": param_layer.name,
             "ParName": param_layer.par_name,
@@ -72,7 +72,7 @@ def write_object_model(file_path: str, object_models: List[UnitModelold]) -> Non
             "Value": param_layer.value,
         }
 
-    def serialize_unit_layer(unit_layer: UnitObject) -> dict[str, any]:
+    def serialize_unit_layer(unit_layer: Element) -> dict[str, any]:
         return {
             "Name": unit_layer.name,
             "Category": unit_layer.category,
@@ -91,12 +91,12 @@ def write_object_model(file_path: str, object_models: List[UnitModelold]) -> Non
         toml.dump(data, toml_file)
 
 
-def update_object_model(json_data: str, object_unit: UnitObject):
+def update_object_model(json_data: str, object_unit: Element):
     """使用数据更新对象模型
 
     Args:
         json_data (str): _description_
-        object_unit (UnitObject): _description_
+        object_unit (Element): _description_
     """
     # 解析JSON数据
     data_list = json.loads(json_data)

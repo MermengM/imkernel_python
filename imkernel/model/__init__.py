@@ -13,6 +13,7 @@
 # along with imkernel.  If not, see <https://www.gnu.org/licenses/>.
 # imkernel/model/__init__.py
 
+from .industrymodel import IndustryModel
 from .unit_model import UnitModel
-from .unit_object import UnitObject, UnitCategory
-from .unit_parameter import UnitParameter
+from .unit_object import Element, UnitCategory
+from .unit_parameter import ElementParameter

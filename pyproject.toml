@@ -23,7 +23,8 @@ dependencies = [
     "toml",
     "numpy",
     "pandas",
-    "loguru"
+    "loguru",
+    "jupyterlab"
 ]
 
 [project.urls]

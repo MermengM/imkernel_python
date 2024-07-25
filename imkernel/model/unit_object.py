@@ -1,47 +1,47 @@
 from enum import Enum
 
-import pandas as pd
 from loguru import logger
 
-from .unit_parameter import UnitParameter
+from .unit_parameter import ElementParameter
 
 
 class UnitCategory(Enum):
-    H = "人"
-    M = "机"
+    H = "人员"
+    M = "机器"
     P = "物料"
+    UNIT = "单元"
 
 
 from typing import Dict, List, Any
 
 
-class UnitObject:
+class Element:
     def __init__(self, name: str, category: 'UnitCategory'):
         self.name = name
         self.category = category
-        self._parameters: Dict[str, 'UnitParameter'] = {}
+        self._parameters: Dict[str, 'ElementParameter'] = {}
         self.DataList: List[Any] = []
 
     def add_parameter(self, param):
-        if isinstance(param, UnitParameter):
+        if isinstance(param, ElementParameter):
             self._parameters[param.name] = param
-        elif isinstance(param, UnitObject):
-            nested_param = UnitParameter(name=param.name, value_type="object", value=param, is_object=True)
+        elif isinstance(param, Element):
+            nested_param = ElementParameter(name=param.name, value_type="object", value=param, is_object=True)
             self._parameters[param.name] = nested_param
         else:
             raise ValueError("添加的参数必须是参数或者对象")
         self._update_data_list()
 
-    def add_nested_object(self, name: str, nested_object: 'UnitObject'):
-        param = UnitParameter(name, value_type="object", value=nested_object)
+    def add_nested_object(self, name: str, nested_object: 'Element'):
+        param = ElementParameter(name, value_type="object", value=nested_object)
         self.add_parameter(param)
         self._update_data_list()
 
     def set_parameter_value(self, param_name: str, value):
         if param_name in self._parameters:
             self._parameters[param_name].value = value
-            self._parameters[param_name].real_data = UnitParameter._deserialize(value)
-            self._parameters[param_name].array_data = UnitParameter._deserialize(value)
+            self._parameters[param_name].real_data = ElementParameter._deserialize(value)
+            self._parameters[param_name].array_data = ElementParameter._deserialize(value)
         else:
             logger.error(f"参数 '{param_name}' 不存在")
 
@@ -56,7 +56,7 @@ class UnitObject:
             super().__setattr__(name, value)
         elif name in self._parameters:
             par = self._parameters.get(name)
-            if isinstance(par.value, UnitObject):
+            if isinstance(par.value, Element):
                 if isinstance(value, list) and all(isinstance(item, list) for item in value):
                     par.value.DataList = value
                     par.value._update_parameters()
@@ -64,8 +64,8 @@ class UnitObject:
                     logger.error("参数不匹配，应该使用嵌套列表赋值")
             else:
                 par.value = value
-                par.real_data = UnitParameter._deserialize(value)
-                par.array_data = UnitParameter._deserialize(value)
+                par.real_data = ElementParameter._deserialize(value)
+                par.array_data = ElementParameter._deserialize(value)
         else:
             logger.error("参数不存在")
 
@@ -74,8 +74,8 @@ class UnitObject:
             for i, param_name in enumerate(self._parameters):
                 values = [group[i] for group in self.DataList if i < len(group)]
                 self._parameters[param_name].value = values
-                self._parameters[param_name].real_data = UnitParameter._deserialize(values)
-                self._parameters[param_name].array_data = UnitParameter._deserialize(values)
+                self._parameters[param_name].real_data = ElementParameter._deserialize(values)
+                self._parameters[param_name].array_data = ElementParameter._deserialize(values)
 
     def __getattr__(self, name):
         if name in self._parameters:
@@ -117,15 +117,32 @@ class UnitObject:
 
 
 def unit_to_dict(unit):
-    data = {}
+    data = {
+        "name": unit.name,
+        "category": unit.category.value,
+        "parameters": {}
+    }
     for name, param in unit._parameters.items():
-        if isinstance(param, UnitObject):
-            data[name] = unit_to_dict(param)
+        if isinstance(param, Element):
+            data["parameters"][name] = unit_to_dict(param)
         else:
-            data[name] = param.value
+            data["parameters"][name] = param.value
     return data
 
 
-def unit_to_dataframe(unit):
+import pandas as pd
+
+
+def dict_to_nested_dataframe(data):
+    main_data = {"name": data["name"], "category": data["category"]}
+    for name, value in data["parameters"].items():
+        if isinstance(value, dict):
+            main_data[name] = dict_to_nested_dataframe(value)
+        else:
+            main_data[name] = value
+    return pd.DataFrame([main_data])
+
+
+def unit_to_nested_dataframe(unit):
     data = unit_to_dict(unit)
-    return pd.DataFrame([data])
+    return dict_to_nested_dataframe(data)

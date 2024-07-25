@@ -1,10 +1,10 @@
-from imkernel.model import UnitCategory, UnitObject, UnitParameter
+from imkernel.model import UnitCategory, Element, ElementParameter
 
-main_object = UnitObject("MainObject", UnitCategory.M)
+main_object = Element("MainObject", UnitCategory.M)
 
 # 创建嵌套对象
-nested_object = UnitObject("NestedObject", UnitCategory.P)
-nested_object.add_parameter(UnitParameter("最底层参数-整数", value_type="int", value=42))
+nested_object = Element("NestedObject", UnitCategory.P)
+nested_object.add_parameter(ElementParameter("最底层参数-整数", value_type="int", value=42))
 
 # 将嵌套对象添加到主对象
 
