@@ -1,5 +1,4 @@
 import numpy as np
-
 from imkernel.model.new_model import BaseNode, System, UnitObject, UnitParameter, UnitData
 import pandas as pd
 
@@ -14,7 +13,8 @@ Elements_df = pd.DataFrame(data=[
     ('machine', 'BasicParameters'),
     ('machine', 'MachiningParameter'),
     ('cutter', 'BasicParameters'),
-    ('cutter', 'P_Parameter')
+    ('cutter', 'P_Parameter'),
+    ('cutter', 'NoneTest')
 ])
 
 # 创建DataFrame
@@ -52,6 +52,11 @@ parameter_pd = pd.DataFrame(data=[
 system = System()
 system.build_from_dataframes(Elements_df, parameter_pd)
 
+# 使用新的基于名称的方法设置和获取数据
+system.set_node_data("ElevenParameters", "Chord_Length", "12332")
+system.set_node_data("ElevenParameters", "Upper_Max_Width", 0.5)
+system.set_node_data("ElevenParameters", "Upper_Max_Width_Loc", [1, 2, 3, 4])
+a = system.get_node_data("ElevenParameters", "Chord_Length")
 # 打印完整树形结构
 print("Complete Tree:")
 system.print_tree()
@@ -63,3 +68,26 @@ print(system.get_object_tree())
 # 获取并打印只包含UnitParameter的树
 print("\nParameter Tree:")
 print(system.get_parameter_tree())
+
+# 生成对象 DataFrame
+objects_df = system.generate_objects_df()
+print("Objects DataFrame:")
+print(objects_df)
+print()
+
+# 生成参数 DataFrame
+parameters_df = system.generate_parameters_df()
+print("Parameters DataFrame:")
+print(parameters_df)
+print()
+
+# 生成所有元素的 DataFrame
+elements_df = system.generate_elements_df()
+print("All Elements DataFrame:")
+print(elements_df)
+
+# Get all data as a DataFrame
+data_df = system.get_all_data_as_dataframe()
+
+# Display the DataFrame
+print(data_df)
