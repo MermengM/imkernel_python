@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List, Union, Optional
 from typing import Dict, Any
 import pandas as pd
 from loguru import logger
@@ -24,6 +24,40 @@ class BaseNode(ABC):
     @abstractmethod
     def get_type(self) -> str:
         pass
+
+    def get_path(self) -> List[str]:
+        if self.parent is None:
+            return [self.name]
+        return self.parent.get_path() + [self.name]
+
+
+class DataManager:
+    def __init__(self):
+        self.data_store: Dict[str, Dict[str, Any]] = {}
+
+    def set_data(self, node: BaseNode, key: str, value: Any) -> None:
+        node_path = ":".join(node.get_path())
+        if node_path not in self.data_store:
+            self.data_store[node_path] = {}
+        self.data_store[node_path][key] = value
+
+    def get_data(self, node: BaseNode, key: str) -> Any:
+        node_path = ":".join(node.get_path())
+        return self.data_store.get(node_path, {}).get(key)
+
+    def delete_data(self, node: BaseNode, key: str) -> None:
+        node_path = ":".join(node.get_path())
+        if node_path in self.data_store and key in self.data_store[node_path]:
+            del self.data_store[node_path][key]
+
+    def get_all_data(self, node: BaseNode) -> Dict[str, Any]:
+        node_path = ":".join(node.get_path())
+        return self.data_store.get(node_path, {})
+
+    def clear_node_data(self, node: BaseNode) -> None:
+        node_path = ":".join(node.get_path())
+        if node_path in self.data_store:
+            del self.data_store[node_path]
 
 
 class RootNode(BaseNode):
@@ -62,62 +96,327 @@ class UnitData(BaseNode):
 class System:
     def __init__(self):
         self.root = RootNode("Root", "0")
+        self.node_counter = 1
+        self.data_manager = DataManager()
 
-    def add_node(self, parent: BaseNode, child: BaseNode):
-        parent.add_child(child)
+    def generate_unique_id(self) -> str:
+        self.node_counter += 1
+        return str(self.node_counter)
 
-    def remove_node(self, node: BaseNode):
+    # def add_node(self, parent: BaseNode, child: BaseNode):
+    #     parent.add_child(child)
+
+    def add_node(self, parent: BaseNode, node: BaseNode, name: str) -> BaseNode:
+        parent.add_child(node)
+        return node
+
+    def add_object_to_node(self, parent_node_name: str, new_object_name: str) -> Optional[UnitObject]:
+
+        parent_node = self.find_node(parent_node_name)
+
+        if parent_node is None:
+            logger.error(f"父对象 '{parent_node_name}' 未找到.")
+            return None
+
+        # Check if an object with the same name already exists under the parent
+        for child in parent_node.children:
+            if child.name == new_object_name and isinstance(child, UnitObject):
+                logger.warning(f" '{new_object_name}'已经在 '{parent_node_name}' 下存在.")
+                return child
+
+        # Create and add the new UnitObject
+        new_object_id = self.generate_unique_id()
+        new_object = UnitObject(new_object_name, new_object_id)
+        self.add_node(parent_node, new_object, new_object_name)
+
+        logger.info(f"增加 '{new_object_name}' (ID: {new_object_id}) 到 '{parent_node_name}'.")
+        return new_object
+
+    def remove_node(self, node: BaseNode) -> None:
         if node.parent:
             node.parent.remove_child(node)
+        self.data_manager.clear_node_data(node)
 
-    def find_node_by_id(self, id: str) -> Union[BaseNode, None]:
-        return self._find_node_by_id_recursive(self.root, id)
+    def find_node(self, name: str, start_node: BaseNode = None) -> Union[BaseNode, None]:
+        if start_node is None:
+            start_node = self.root
 
-    def _find_node_by_id_recursive(self, node: BaseNode, id: str) -> Union[BaseNode, None]:
-        if node.id == id:
-            return node
-        for child in node.children:
-            result = self._find_node_by_id_recursive(child, id)
+        if start_node.name == name:
+            return start_node
+
+        for child in start_node.children:
+            result = self.find_node(name, child)
             if result:
                 return result
+
         return None
 
+    # region 转换器
+    def get_object_df(self):
+        paths = []
+        self._collect_paths(self.root, [], paths, include_parameters=False)
+        return self._create_df_from_paths(paths)
+
+    def get_data_df(self) -> pd.DataFrame:
+        data_list = []
+        self._collect_all_data(self.root, [], data_list)
+        return pd.DataFrame(data_list, columns=['对象', '参数名', '参数值'])
+
+    def _collect_all_data(self, node: BaseNode, current_path: List[str], data_list: List[Dict[str, Any]]):
+        node_path = ":".join(current_path + [node.name])
+        node_data = self.data_manager.get_all_data(node)
+
+        for key, value in node_data.items():
+            data_list.append({
+                '对象': node_path,
+                '参数名': key,
+                '参数值': value
+            })
+
+        for child in node.children:
+            self._collect_all_data(child, current_path + [node.name], data_list)
+
+    # def generate_parameters_df(self):
+    #     param_data = []
+    #     self._collect_parameters(self.root, [], param_data)
+    #     df = pd.DataFrame(param_data, columns=['单元对象', '参数名'])
+    #     return df
+    #
+    # def _collect_parameters(self, node, current_path, param_data):
+    #     if isinstance(node, UnitParameter):
+    #         parent_name = current_path[-1] if current_path else 'Root'
+    #         param_data.append((parent_name, node.name))
+    #     else:
+    #         for child in node.children:
+    #             self._collect_parameters(child, current_path + [node.name], param_data)
+
+    def get_parameter_df(self):
+        param_data = []
+        self._collect_parameters(self.root, [], param_data)
+        df = pd.DataFrame(param_data, columns=['单元对象', '单元参数'])
+        return df
+
+    def _collect_parameters(self, node, current_path, param_data):
+        if isinstance(node, UnitParameter):
+            object_path = ' > '.join(current_path) if current_path else 'Root'
+            param_data.append((object_path, node.name))
+        else:
+            for child in node.children:
+                self._collect_parameters(child, current_path + [node.name], param_data)
+
+    def get_element_df(self):
+        paths = []
+        for child in self.root.children:
+            self._collect_paths(child, [], paths, include_parameters=True)
+        return self._create_df_from_paths(paths)
+
+    def _collect_paths(self, node, current_path, paths, include_parameters=True):
+        current_path = current_path + [node.name]
+
+        if not node.children or (isinstance(node, UnitParameter) and not include_parameters):
+            paths.append(current_path)
+        else:
+            for child in node.children:
+                if include_parameters or not isinstance(child, UnitParameter):
+                    self._collect_paths(child, current_path, paths, include_parameters)
+
+    def _create_df_from_paths(self, paths):
+        max_length = max(len(path) for path in paths)
+        padded_paths = [path + [None] * (max_length - len(path)) for path in paths]
+        df = pd.DataFrame(padded_paths)
+        df = df.dropna(axis=1, how='all')
+        return df
+
+    # endregion
+    # region 参数Parameter操作
+    def get_parameters_by_node_name(self, node_name: str) -> List[str]:
+        node = self.find_node(node_name)
+        if node:
+            parameters = self._get_all_parameters(node)
+            return [param.name for param in parameters]
+        else:
+            return []
+
+    def get_parameters_dict_by_node_name(self, node_name: str) -> Dict[str, Any]:
+        node = self.find_node(node_name)
+        if node:
+            parameters = self._get_all_parameters(node)
+            return {param.name: self.get_node_data(node_name, param.name) for param in parameters}
+        else:
+            return {}
+
+    def get_parameters_for_object(self, object_name: str) -> List[str]:
+        """
+        获取指定 UnitObject 下的所有参数名称列表。
+
+        :param object_name: UnitObject 的名称
+        :return: 参数名称列表
+        """
+        node = self.find_node(object_name)
+        if node is None or not isinstance(node, UnitObject):
+            raise ValueError(f"未找到名为 '{object_name}' 的 UnitObject")
+
+        parameters = []
+        for child in node.children:
+            if isinstance(child, UnitParameter):
+                parameters.append(child.name)
+        return parameters
+
+    def get_parameters_df_for_object(self, object_name: str) -> Optional[pd.DataFrame]:
+        """
+        获取指定 UnitObject 下的所有参数，并以 DataFrame 形式返回。
+
+        :param object_name: UnitObject 的名称
+        :return: 包含参数信息的 DataFrame，如果没有参数则返回 None
+        """
+        parameters = self.get_parameters_for_object(object_name)
+        if not parameters:
+            return None
+
+        data = []
+        for param in parameters:
+            value = self.get_node_data(object_name, param)
+            data.append({"Parameter": param, "Value": value})
+
+        return pd.DataFrame(data)
+
+    # endregion
+    # region Data操作
+    def set_node_data(self, node_name: str, key: str, value: Any) -> None:
+        node = self.find_node(node_name)
+        if node:
+            self.data_manager.set_data(node, key, value)
+        else:
+            raise ValueError(f"Node not found: {node_name}")
+
+    def add_node_data(self, node_name: str, value_dict: Dict[str, Any]) -> None:
+        node = self.find_node(node_name)
+        if node:
+            for x in value_dict:
+                for key, value in x.items():
+                    current_value = self.data_manager.get_data(node, key)
+                    if current_value is None:
+                        new_value = value
+                    elif isinstance(current_value, list):
+                        new_value = current_value + [value]
+                    else:
+                        new_value = [current_value, value]
+                    self.data_manager.set_data(node, key, new_value)
+        else:
+            raise ValueError(f"Node not found: {node_name}")
+
+    def get_node_data(self, node_name: str, key: str) -> Any:
+        node = self.find_node(node_name)
+        if node:
+            return self.data_manager.get_data(node, key)
+        else:
+            raise ValueError(f"节点: {node_name}未找到")
+
+    def delete_node_data(self, node_name: str, key: str) -> None:
+        node = self.find_node(node_name)
+        if node:
+            self.data_manager.delete_data(node, key)
+        else:
+            raise ValueError(f"节点: {node_name}未找到")
+
+    def get_all_node_data(self, node_name: str) -> Dict[str, Any]:
+        node = self.find_node(node_name)
+        if node:
+            return self.data_manager.get_all_data(node)
+        else:
+            raise ValueError(f"节点: {node_name}未找到")
+
+    def set_multiple_node_data(self, node_name: str, param_list: List[Dict[str, Any]]):
+        for param_dict in param_list:
+            for key, value in param_dict.items():
+                try:
+                    self.set_node_data(node_name, key, value)
+                except Exception as e:
+                    print(f"无法设置参数 {key} 的值: {str(e)}")
+
+    # endregion Data操作
+
+    # region show方法
     def print_tree(self):
         self._print_tree_recursive(self.root, 0)
 
-    def _print_tree_recursive(self, node: BaseNode, level: int):
-        print("  " * level + f"{node.name} ({node.get_type()})")
+    def _print_tree_recursive(self, node, level):
+        indent = "  " * level
+        node_type = type(node).__name__
+        node_data = self.get_all_node_data(node.name)
+        data_str = f" - Data: {node_data}" if node_data else ""
+        print(f"{indent}{node.name} ({node_type}){data_str}")
+
         for child in node.children:
             self._print_tree_recursive(child, level + 1)
 
-    # region show方法
-    def get_object_tree(self) -> Dict[str, Any]:
-        return self._get_tree_recursive(self.root, lambda node: isinstance(node, UnitObject))
+    def get_object_tree(self) -> str:
+        return self._get_tree_recursive(self.root, lambda node: isinstance(node, UnitObject), 0)
 
-    def get_parameter_tree(self) -> Dict[str, Any]:
-        return self._get_tree_recursive(self.root, lambda node: isinstance(node, UnitParameter))
+    def get_parameter_tree(self) -> str:
+        return self._get_parameter_tree_recursive(self.root, 0)
 
-    def get_data_tree(self) -> Dict[str, Any]:
-        return self._get_tree_recursive(self.root, lambda node: isinstance(node, UnitData))
+    def _get_parameter_tree_recursive(self, node: BaseNode, level: int) -> str:
+        result = ""
+        has_parameters = False
 
-    def _get_tree_recursive(self, node: BaseNode, filter_func) -> Dict[str, Any]:
-        result = {}
-        if filter_func(node):
-            result[node.name] = {}
-            for child in node.children:
-                child_result = self._get_tree_recursive(child, filter_func)
-                if child_result:
-                    result[node.name].update(child_result)
+        # 检查当前节点或其子节点是否有参数
+        if isinstance(node, UnitParameter):
+            has_parameters = True
         else:
             for child in node.children:
-                child_result = self._get_tree_recursive(child, filter_func)
-                if child_result:
-                    result.update(child_result)
+                if self._has_parameters(child):
+                    has_parameters = True
+                    break
+
+        if has_parameters:
+            if isinstance(node, UnitObject):
+                result += "  " * level + f"({node.id}) {node.name} ({node.get_type()})\n"
+                level += 1
+            elif isinstance(node, UnitParameter):
+                result += "  " * level + f"({node.id}) {node.name} ({node.get_type()})\n"
+
+            for child in node.children:
+                result += self._get_parameter_tree_recursive(child, level)
+
         return result
 
-    def build_from_dataframes(self, elements_df: pd.DataFrame, parameter_df: pd.DataFrame):
-        self.build_object_structure(elements_df)
-        self.add_parameters(parameter_df)
+    def _has_parameters(self, node: BaseNode) -> bool:
+        if isinstance(node, UnitParameter):
+            return True
+        return any(self._has_parameters(child) for child in node.children)
+
+    def get_data_tree(self) -> str:
+        return self._get_tree_recursive(self.root, lambda node: isinstance(node, UnitData), 0)
+
+    def _get_tree_recursive(self, node: BaseNode, filter_func, level: int) -> str:
+        result = ""
+        if filter_func(node):
+            result += "  " * level + f"({node.id}){node.name} ({node.get_type()})\n"
+            for child in node.children:
+                result += self._get_tree_recursive(child, filter_func, level + 1)
+        else:
+            for child in node.children:
+                result += self._get_tree_recursive(child, filter_func, level)
+        return result
+
+    def _get_all_parameters(self, node: BaseNode) -> List[UnitParameter]:
+        parameters = []
+        if isinstance(node, UnitParameter):
+            parameters.append(node)
+        for child in node.children:
+            parameters.extend(self._get_all_parameters(child))
+        return parameters
+
+    def build_from_dataframes(self, elements_df: pd.DataFrame | None = None, parameter_df: pd.DataFrame | None = None):
+        if elements_df is None and parameter_df is None:
+            raise ValueError("请提供参数！")
+
+        if elements_df is not None:
+            self.build_object_structure(elements_df)
+
+        if parameter_df is not None:
+            self.add_parameters(parameter_df)
 
     def build_object_structure(self, df: pd.DataFrame):
         for index, row in df.iterrows():
@@ -128,7 +427,7 @@ class System:
         for i, item in enumerate(row):
             if pd.isna(item):
                 break
-            child = self.find_or_create_child(current_node, item, f"{index}.{i}", UnitObject)
+            child = self.find_or_create_child(current_node, item, self.generate_unique_id(), UnitObject)
             current_node = child
 
     def add_parameters(self, df: pd.DataFrame):
@@ -145,7 +444,7 @@ class System:
                 break
 
         if len(valid_values) < 2:
-            logger.info(f"Skipping row {index} due to insufficient valid values: {row}")
+            logger.info(f"没有足够列，跳过第 {index} 行： {row}")
             return
 
         parameter_name, object_name = valid_values
@@ -154,11 +453,11 @@ class System:
 
         if matched_nodes:
             for matched_node in matched_nodes:
-                logger.info(f"Matched parameter '{parameter_name}' to object '{matched_node.name}'")
-                param_node = UnitParameter(parameter_name, f"{index}.{len(row) - 1}")
-                self.add_node(matched_node, param_node)
+                logger.info(f"对象：'{matched_node.name}' 匹配到参数： '{parameter_name}'")
+                param_node = UnitParameter(parameter_name, self.generate_unique_id())
+                self.add_node(matched_node, param_node, param_node.name)
         else:
-            logger.warning(f"Could not find matching object '{object_name}' for parameter '{parameter_name}'")
+            logger.warning(f"找不到满足 '{parameter_name}' 的对象：'{object_name}'  ")
 
     def _find_matching_nodes(self, object_name):
         def search(node, results):
@@ -176,5 +475,5 @@ class System:
             if child.name == name and isinstance(child, node_class):
                 return child
         new_child = node_class(name, id)
-        self.add_node(parent, new_child)
+        self.add_node(parent, new_child, new_child.name)
         return new_child
