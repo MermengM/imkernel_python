@@ -118,7 +118,7 @@ class System:
             logger.error(f"父对象 '{parent_node_name}' 未找到.")
             return None
 
-        # Check if an object with the same name already exists under the parent
+        # 检查是否已存在相同名称的对象
         for child in parent_node.children:
             if child.name == new_object_name and isinstance(child, UnitObject):
                 logger.warning(f" '{new_object_name}'已经在 '{parent_node_name}' 下存在.")
@@ -477,3 +477,91 @@ class System:
         new_child = node_class(name, id)
         self.add_node(parent, new_child, new_child.name)
         return new_child
+
+    def get_system_df(self):
+        # 获取元素结构
+        element_df = self.get_element_df()
+        # 初始化一个空的列表来存储所有数据
+        # 这里可以进一步处理 element_df，并结合其他数据生成系统 DataFrame
+        return element_df  # 目前返回 element_df 作为示例
+
+    def get_element_df_new(self) -> pd.DataFrame:
+        paths = []
+        self._collect_paths_with_data_new(self.root, [], paths)
+        return self._create_df_from_paths_1(paths)
+
+    def _collect_paths_with_data_new(self, node: BaseNode, current_path: List[str], paths: List[Dict[str, Any]]):
+        current_path.append(node.name)
+        node_data = self.data_manager.get_all_data(node)  # 获取当前节点的数据
+
+        # 保存路径和数据
+        paths.append({'path': current_path.copy(), 'data': node_data})
+
+        for child in node.children:
+            self._collect_paths_with_data_new(child, current_path, paths)
+
+        current_path.pop()  # 回溯，移除当前节点
+
+    def _create_df_from_paths_1(self, paths: List[Dict[str, Any]]) -> pd.DataFrame:
+        max_length = max(len(p['path']) for p in paths)
+        df = pd.DataFrame(columns=[f'Level {i + 1}' for i in range(max_length)] + ['Data'])
+
+        # 创建 DataFrame 行
+        for path_info in paths:
+            row = path_info['path'] + [None] * (max_length - len(path_info['path']))  # 填充 None
+            row_data = path_info['data']
+
+            # 如果有数据，填充到对应的行
+            if row_data:
+                for key, value in row_data.items():
+                    new_row = row.copy()  # 复制当前行
+                    new_row[-1] = value  # 将值放入最后一列
+                    # 只添加非空的数据行
+                    if key:
+                        new_row.insert(-1, key)  # 插入参数名称
+                        df.loc[len(df)] = new_row  # 添加新行
+
+        return df
+
+    def get_full_system_df(self) -> pd.DataFrame:
+        paths = []
+        self._collect_full_paths_with_data(self.root, [], paths)
+        return self._create_full_df_from_paths_2(paths)
+
+    def _collect_full_paths_with_data(self, node: BaseNode, current_path: List[str], paths: List[Dict[str, Any]]):
+        current_path.append(node.name)
+        node_data = self.data_manager.get_all_data(node)  # 获取当前节点的数据
+
+        # 保存路径和数据
+        paths.append({'path': current_path.copy(), 'data': node_data})
+
+        for child in node.children:
+            self._collect_full_paths_with_data(child, current_path, paths)
+
+        # 添加空行以保持结构
+        if not node.children:
+            paths.append({'path': current_path.copy(), 'data': None})  # 添加空行
+
+        current_path.pop()  # 回溯，移除当前节点
+
+    def _create_full_df_from_paths_2(self, paths: List[Dict[str, Any]]) -> pd.DataFrame:
+        max_length = max(len(p['path']) for p in paths)
+        df = pd.DataFrame(columns=[f'Level {i + 1}' for i in range(max_length)] + ['Data'])
+
+        # 创建 DataFrame 行
+        for path_info in paths:
+            row = path_info['path'] + [None] * (max_length - len(path_info['path']))  # 填充 None
+            row_data = path_info['data']
+
+            # 填充数据
+            if row_data:
+                for key, value in row_data.items():
+                    new_row = row.copy()
+                    new_row[-1] = value  # 将值放入最后一列
+                    new_row.insert(-1, key)  # 插入参数名称
+                    df.loc[len(df)] = new_row  # 添加新行
+            else:
+                new_row = row + [None]  # 空值行填充
+                df.loc[len(df)] = new_row  # 添加空行
+
+        return df
