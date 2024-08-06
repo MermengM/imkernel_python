@@ -34,6 +34,7 @@ parameter_df = pd.DataFrame(data=[
 
 # 单元对象修改
 system = System()
-system.build_from_dataframes(parameter_df=parameter_df)
+system.build_from_dataframes(parameter_df)
 system.add_object_to_node("ElevenParameters", "新增参数")
 Elements_df_new = system.get_element_df()
+Elements_df_new

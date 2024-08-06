@@ -52,19 +52,20 @@ elements_df = system.get_element_df()
 elements_df
 
 # 添加一套数据
-system.set_node_data("ElevenParameters", "Chord_Length", 0.5)
-system.set_node_data("ElevenParameters", "Upper_Max_Width", 0.5)
-system.set_node_data("ElevenParameters", "Upper_Max_Width_Loc", 0.5)
-system.set_node_data("ElevenParameters", "Upper_Angle", 0.5)
-system.set_node_data("ElevenParameters", "Upper_tip_coeff", 0.5)
-system.set_node_data("ElevenParameters", "Upper_aft_part_shape", 0.5)
-system.set_node_data("ElevenParameters", "Lower_max_width", 0.5)
-system.set_node_data("ElevenParameters", "Lower_max_width_loc", 0.5)
-system.set_node_data("ElevenParameters", "Lower_Angle", 0.5)
-system.set_node_data("ElevenParameters", "Lower_tip_coeff", 0.5)
-system.set_node_data("ElevenParameters", "Lower_aft_part_shape", 0.5)
-system.set_node_data("ElevenParameters", "Tangent_Leading_Edge", 0.5)
-
+system.set_node_data("Chord_Length", 0.5)
+system.set_node_data("Upper_Max_Width", 0.5)
+system.set_node_data("Upper_Max_Width_Loc", 0.5)
+system.set_node_data("Upper_Angle", 0.5)
+system.set_node_data("Upper_tip_coeff", 0.5)
+system.set_node_data("Upper_aft_part_shape", 0.5)
+system.set_node_data("Lower_max_width", 0.5)
+system.set_node_data("Lower_max_width_loc", 0.5)
+system.set_node_data("Lower_Angle", 0.5)
+system.set_node_data("Lower_tip_coeff", 0.5)
+system.set_node_data("Lower_aft_part_shape", 0.5)
+system.set_node_data("Tangent_Leading_Edge", 0.5)
+system.set_node_data("A", 0.5)
+system.print_tree()
 # 输出十一参数数据
 ElevenParameters_df = system.get_parameters_df_for_object('ElevenParameters')
 ElevenParameters_df1 = system.get_parameters_for_object('ElevenParameters')
@@ -76,7 +77,11 @@ elevenParameters_input_dict = system.get_parameters_dict_by_node_name('ElevenPar
 from algo import make_molded
 
 result = make_molded(**elevenParameters_input_dict)
-system.add_node_data("SectionPoints", result)
-x = system.get_parameters_dict_by_node_name("SectionPoints")
-result_df = system.get_parameters_df_for_object('SectionPoints')
-result_df
+system.add_node_data("CurvePonits", result)
+# x = system.get_parameters_dict_by_node_name("CurvePonits")
+# print(x)
+result_df = system.get_element_df()
+all_df = system.get_element_df()
+system.print_tree()
+
+print(1)

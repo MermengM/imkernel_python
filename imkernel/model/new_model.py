@@ -31,35 +31,6 @@ class BaseNode(ABC):
         return self.parent.get_path() + [self.name]
 
 
-class DataManager:
-    def __init__(self):
-        self.data_store: Dict[str, Dict[str, Any]] = {}
-
-    def set_data(self, node: BaseNode, key: str, value: Any) -> None:
-        node_path = ":".join(node.get_path())
-        if node_path not in self.data_store:
-            self.data_store[node_path] = {}
-        self.data_store[node_path][key] = value
-
-    def get_data(self, node: BaseNode, key: str) -> Any:
-        node_path = ":".join(node.get_path())
-        return self.data_store.get(node_path, {}).get(key)
-
-    def delete_data(self, node: BaseNode, key: str) -> None:
-        node_path = ":".join(node.get_path())
-        if node_path in self.data_store and key in self.data_store[node_path]:
-            del self.data_store[node_path][key]
-
-    def get_all_data(self, node: BaseNode) -> Dict[str, Any]:
-        node_path = ":".join(node.get_path())
-        return self.data_store.get(node_path, {})
-
-    def clear_node_data(self, node: BaseNode) -> None:
-        node_path = ":".join(node.get_path())
-        if node_path in self.data_store:
-            del self.data_store[node_path]
-
-
 class RootNode(BaseNode):
     def __init__(self, name: str, id: str):
         super().__init__(name, id)
@@ -79,13 +50,25 @@ class UnitObject(BaseNode):
 class UnitParameter(BaseNode):
     def __init__(self, name: str, id: str):
         super().__init__(name, id)
+        self.data = None
 
     def get_type(self) -> str:
         return "UnitParameter"
 
+    def set_data(self, value: Any):
+        if self.data is None:
+            self.data = UnitData(f"{value}", f"{self.id}_data", value)
+            self.add_child(self.data)
+        else:
+            self.data.value = value
 
+    def get_data(self) -> Any:
+        return self.data.value if self.data else None
+
+
+# region UnitData
 class UnitData(BaseNode):
-    def __init__(self, name: str, id: str, value: any = None):
+    def __init__(self, name: str, id: str, value: Any = None):
         super().__init__(name, id)
         self.value = value
 
@@ -93,49 +76,92 @@ class UnitData(BaseNode):
         return "UnitData"
 
 
+# endregion
 class System:
     def __init__(self):
         self.root = RootNode("Root", "0")
         self.node_counter = 1
-        self.data_manager = DataManager()
 
     def generate_unique_id(self) -> str:
         self.node_counter += 1
         return str(self.node_counter)
-
-    # def add_node(self, parent: BaseNode, child: BaseNode):
-    #     parent.add_child(child)
 
     def add_node(self, parent: BaseNode, node: BaseNode, name: str) -> BaseNode:
         parent.add_child(node)
         return node
 
     def add_object_to_node(self, parent_node_name: str, new_object_name: str) -> Optional[UnitObject]:
-
         parent_node = self.find_node(parent_node_name)
 
         if parent_node is None:
             logger.error(f"父对象 '{parent_node_name}' 未找到.")
             return None
 
-        # 检查是否已存在相同名称的对象
-        for child in parent_node.children:
-            if child.name == new_object_name and isinstance(child, UnitObject):
-                logger.warning(f" '{new_object_name}'已经在 '{parent_node_name}' 下存在.")
-                return child
+        existing_object = next((child for child in parent_node.children
+                                if child.name == new_object_name and isinstance(child, UnitObject)), None)
 
-        # Create and add the new UnitObject
+        if existing_object:
+            logger.warning(f" '{new_object_name}'已经在 '{parent_node_name}' 下存在.")
+            return existing_object
+
         new_object_id = self.generate_unique_id()
         new_object = UnitObject(new_object_name, new_object_id)
         self.add_node(parent_node, new_object, new_object_name)
 
         logger.info(f"增加 '{new_object_name}' (ID: {new_object_id}) 到 '{parent_node_name}'.")
         return new_object
+        # region Data操作
+
+    def set_node_data(self, node_name: str, value: Any) -> None:
+        node = self.find_node(node_name)
+        if node and isinstance(node, UnitParameter):
+            node.set_data(value)
+        else:
+            raise ValueError(f"Node not found or not a UnitParameter: {node_name}")
+
+    def get_node_data(self, node_name: str) -> Any:
+        node = self.find_node(node_name)
+        if node and isinstance(node, UnitParameter):
+            return node.get_data()
+        else:
+            raise ValueError(f"Node not found or not a UnitParameter: {node_name}")
+
+    def delete_node_data(self, node_name: str) -> None:
+        node = self.find_node(node_name)
+        if node and isinstance(node, UnitParameter):
+            node.set_data(None)
+        else:
+            raise ValueError(f"Node not found or not a UnitParameter: {node_name}")
+
+    def get_all_node_data(self, node_name: str) -> Dict[str, Any]:
+        node = self.find_node(node_name)
+        if node:
+            data = {}
+            for child in node.children:
+                if isinstance(child, UnitParameter):
+                    data[child.name] = child.get_data()
+            return data
+        else:
+            raise ValueError(f"Node not found: {node_name}")
+
+    def set_multiple_node_data(self, node_name: str, param_list: List[Dict[str, Any]]):
+        node = self.find_node(node_name)
+        if node:
+            for param_dict in param_list:
+                for key, value in param_dict.items():
+                    param_node = self.find_node(key, node)
+                    if param_node and isinstance(param_node, UnitParameter):
+                        param_node.set_data(value)
+                    else:
+                        print(f"无法设置参数 {key} 的值")
+        else:
+            raise ValueError(f"Node not found: {node_name}")
+
+    # endregion Data操作
 
     def remove_node(self, node: BaseNode) -> None:
         if node.parent:
             node.parent.remove_child(node)
-        self.data_manager.clear_node_data(node)
 
     def find_node(self, name: str, start_node: BaseNode = None) -> Union[BaseNode, None]:
         if start_node is None:
@@ -175,20 +201,6 @@ class System:
 
         for child in node.children:
             self._collect_all_data(child, current_path + [node.name], data_list)
-
-    # def generate_parameters_df(self):
-    #     param_data = []
-    #     self._collect_parameters(self.root, [], param_data)
-    #     df = pd.DataFrame(param_data, columns=['单元对象', '参数名'])
-    #     return df
-    #
-    # def _collect_parameters(self, node, current_path, param_data):
-    #     if isinstance(node, UnitParameter):
-    #         parent_name = current_path[-1] if current_path else 'Root'
-    #         param_data.append((parent_name, node.name))
-    #     else:
-    #         for child in node.children:
-    #             self._collect_parameters(child, current_path + [node.name], param_data)
 
     def get_parameter_df(self):
         param_data = []
@@ -275,66 +287,12 @@ class System:
 
         data = []
         for param in parameters:
-            value = self.get_node_data(object_name, param)
+            value = self.get_node_data(object_name)
             data.append({"Parameter": param, "Value": value})
 
         return pd.DataFrame(data)
 
     # endregion
-    # region Data操作
-    def set_node_data(self, node_name: str, key: str, value: Any) -> None:
-        node = self.find_node(node_name)
-        if node:
-            self.data_manager.set_data(node, key, value)
-        else:
-            raise ValueError(f"Node not found: {node_name}")
-
-    def add_node_data(self, node_name: str, value_dict: Dict[str, Any]) -> None:
-        node = self.find_node(node_name)
-        if node:
-            for x in value_dict:
-                for key, value in x.items():
-                    current_value = self.data_manager.get_data(node, key)
-                    if current_value is None:
-                        new_value = value
-                    elif isinstance(current_value, list):
-                        new_value = current_value + [value]
-                    else:
-                        new_value = [current_value, value]
-                    self.data_manager.set_data(node, key, new_value)
-        else:
-            raise ValueError(f"Node not found: {node_name}")
-
-    def get_node_data(self, node_name: str, key: str) -> Any:
-        node = self.find_node(node_name)
-        if node:
-            return self.data_manager.get_data(node, key)
-        else:
-            raise ValueError(f"节点: {node_name}未找到")
-
-    def delete_node_data(self, node_name: str, key: str) -> None:
-        node = self.find_node(node_name)
-        if node:
-            self.data_manager.delete_data(node, key)
-        else:
-            raise ValueError(f"节点: {node_name}未找到")
-
-    def get_all_node_data(self, node_name: str) -> Dict[str, Any]:
-        node = self.find_node(node_name)
-        if node:
-            return self.data_manager.get_all_data(node)
-        else:
-            raise ValueError(f"节点: {node_name}未找到")
-
-    def set_multiple_node_data(self, node_name: str, param_list: List[Dict[str, Any]]):
-        for param_dict in param_list:
-            for key, value in param_dict.items():
-                try:
-                    self.set_node_data(node_name, key, value)
-                except Exception as e:
-                    print(f"无法设置参数 {key} 的值: {str(e)}")
-
-    # endregion Data操作
 
     # region show方法
     def print_tree(self):
@@ -432,19 +390,13 @@ class System:
 
     def add_parameters(self, df: pd.DataFrame):
         for index, row in df.iterrows():
-            self._add_parameter_from_row(row, index)
+            self._add_parameter_from_row(row)
 
-    def _add_parameter_from_row(self, row, index):
-        # 从右向左遍历行，跳过 None 值
-        valid_values = []
-        for value in reversed(row):
-            if pd.notna(value):
-                valid_values.append(value)
-            if len(valid_values) == 2:
-                break
+    def _add_parameter_from_row(self, row):
+        valid_values = [value for value in reversed(row) if pd.notna(value)][:2]
 
         if len(valid_values) < 2:
-            logger.info(f"没有足够列，跳过第 {index} 行： {row}")
+            logger.info(f"没有足够列，跳过这一行： {row}")
             return
 
         parameter_name, object_name = valid_values
@@ -457,7 +409,7 @@ class System:
                 param_node = UnitParameter(parameter_name, self.generate_unique_id())
                 self.add_node(matched_node, param_node, param_node.name)
         else:
-            logger.warning(f"找不到满足 '{parameter_name}' 的对象：'{object_name}'  ")
+            logger.warning(f"找不到满足 '{parameter_name}' 的对象：'{object_name}' ")
 
     def _find_matching_nodes(self, object_name):
         def search(node, results):

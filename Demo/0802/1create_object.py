@@ -20,9 +20,9 @@ object_df
 system = System()
 system.build_from_dataframes(object_df)
 system.add_object_to_node("BladeCross", "新增对象7")
+BladePolyLine = system.find_node("BladeCross")
+for x in BladePolyLine.children:
+    print(x.name)
+
 Elements_df_new = system.get_element_df()
-# 使用新的基于名称的方法设置和获取数据
-system.set_node_data("ElevenParameters", "Chord_Length", "12332")
-system.set_node_data("ElevenParameters", "Upper_Max_Width", 0.5)
-system.set_node_data("ElevenParameters", "Upper_Max_Width_Loc", [1, 2, 3, 4])
-a = system.get_node_data("ElevenParameters", "Chord_Length")
+Elements_df_new
