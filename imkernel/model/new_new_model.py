@@ -178,6 +178,43 @@ class System:
         return None
 
     # region 转换器
+    def get_object_df(self):
+        paths = []
+        self._collect_paths(self.root, [], paths, include_parameters=False)
+        return self._create_df_from_paths(paths)
+
+    def get_data_df(self) -> pd.DataFrame:
+        data_list = []
+        self._collect_all_data(self.root, [], data_list)
+        return pd.DataFrame(data_list, columns=['对象', '参数名', '参数值'])
+
+    def _collect_all_data(self, node: BaseNode, current_path: List[str], data_list: List[Dict[str, Any]]):
+        node_path = ":".join(current_path + [node.name])
+        node_data = self.data_manager.get_all_data(node)
+
+        for key, value in node_data.items():
+            data_list.append({
+                '对象': node_path,
+                '参数名': key,
+                '参数值': value
+            })
+
+        for child in node.children:
+            self._collect_all_data(child, current_path + [node.name], data_list)
+
+    def get_parameter_df(self):
+        param_data = []
+        self._collect_parameters(self.root, [], param_data)
+        df = pd.DataFrame(param_data, columns=['单元对象', '单元参数'])
+        return df
+
+    def _collect_parameters(self, node, current_path, param_data):
+        if isinstance(node, UnitParameter):
+            object_path = ' > '.join(current_path) if current_path else 'Root'
+            param_data.append((object_path, node.name))
+        else:
+            for child in node.children:
+                self._collect_parameters(child, current_path + [node.name], param_data)
 
     def get_element_df(self):
         paths = []
@@ -203,7 +240,6 @@ class System:
         return df
 
     # endregion
-
     # region 参数Parameter操作
     def get_parameters_by_node_name(self, node_name: str) -> List[str]:
         node = self.find_node(node_name)
@@ -271,6 +307,37 @@ class System:
 
         for child in node.children:
             self._print_tree_recursive(child, level + 1)
+
+    def get_object_tree(self) -> str:
+        return self._get_tree_recursive(self.root, lambda node: isinstance(node, UnitObject), 0)
+
+    def get_parameter_tree(self) -> str:
+        return self._get_parameter_tree_recursive(self.root, 0)
+
+    def _get_parameter_tree_recursive(self, node: BaseNode, level: int) -> str:
+        result = ""
+        has_parameters = False
+
+        # 检查当前节点或其子节点是否有参数
+        if isinstance(node, UnitParameter):
+            has_parameters = True
+        else:
+            for child in node.children:
+                if self._has_parameters(child):
+                    has_parameters = True
+                    break
+
+        if has_parameters:
+            if isinstance(node, UnitObject):
+                result += "  " * level + f"({node.id}) {node.name} ({node.get_type()})\n"
+                level += 1
+            elif isinstance(node, UnitParameter):
+                result += "  " * level + f"({node.id}) {node.name} ({node.get_type()})\n"
+
+            for child in node.children:
+                result += self._get_parameter_tree_recursive(child, level)
+
+        return result
 
     def _has_parameters(self, node: BaseNode) -> bool:
         if isinstance(node, UnitParameter):

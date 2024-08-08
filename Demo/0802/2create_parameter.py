@@ -1,5 +1,5 @@
 import pandas as pd
-
+from imkernel.core.df_utils import find_children, find_all_parents
 from imkernel.model import System
 
 parameter_df = pd.DataFrame(data=[
@@ -32,9 +32,27 @@ parameter_df = pd.DataFrame(data=[
     ('BasicParameters', 'C'),
 ])
 
-# 单元对象修改
+# 单元参数修改
 system = System()
 system.build_from_dataframes(parameter_df)
 system.add_object_to_node("ElevenParameters", "新增参数")
 Elements_df_new = system.get_element_df()
 Elements_df_new
+# 单元参数查找
+test_cases = ['DesginParameters', 'ElevenParameters', 'SectionPoints', 'BasicParameters', '不存在的节点']
+test_cases2 = ['Blade', 'cpts', 'MachiningParameter', 'P_Parameter', '不存在的节点']
+
+for case in test_cases:
+    print(f"\n查找 '{case}' 的子节点:")
+    result_child = find_children(parameter_df, case)
+    if not result_child.empty:
+        print(result_child)
+    else:
+        print("没有找到子节点")
+for case in test_cases2:
+    print(f"\n查找 '{case}' 的父节点:")
+    result_parent = find_all_parents(parameter_df, case)
+    if result_parent is not None:
+        print(result_parent)
+    else:
+        print("没有找到父节点")

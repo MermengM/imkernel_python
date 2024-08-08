@@ -16,6 +16,11 @@ object_df = pd.DataFrame(data=[
     ('cutter', 'BasicParameters'),
     ('cutter', 'P_Parameter')
 ])
+
+# 单元对象修改
+system = System()
+system.build_from_dataframes(object_df)
+
 parameter_df = pd.DataFrame(data=[
     ('DesginParameters', 'ElevenParameters', 'Chord_Length'),
     ('DesginParameters', 'ElevenParameters', 'Upper_Max_Width'),
@@ -45,12 +50,6 @@ parameter_df = pd.DataFrame(data=[
     ('BasicParameters', 'B'),
     ('BasicParameters', 'C'),
 ])
-
-# 单元模型
-system = System()
-system.build_from_dataframes(object_df)
-elements_df = system.get_element_df()
-elements_df
 
 system.associate_parameter_to_object(parameter_info="Chord_Length", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
 system.associate_parameter_to_object(parameter_info="Upper_Max_Width", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])

@@ -6,6 +6,19 @@ import pandas as pd
 class IndustryModel:
     def __init__(self, data=None):
         self.data = data or {}
+        self.current_path = []
+
+    def __repr__(self):
+        """返回对象的字符串表示"""
+        return f"IndustryModel({self.data})"
+
+    def _repr_html_(self):
+        """返回 DataFrame 的 HTML 表示，用于 Jupyter Notebook 显示"""
+        return self.to_dataframe().to_html()
+
+    def __str__(self):
+        """返回 DataFrame 的字符串表示"""
+        return self.to_dataframe().to_string()
 
     def set_value(self, path, value):
         keys = path.split('.')
@@ -14,6 +27,8 @@ class IndustryModel:
             if key not in current:
                 current[key] = {}
             current = current[key]
+
+        # 直接设置值，不进行特殊处理
         current[keys[-1]] = value
 
     def get_value(self, path, default=None):
@@ -74,7 +89,7 @@ class IndustryModel:
         padded_data = [path + [''] * (max_depth - len(path)) for path in data]
 
         # 创建列名
-        columns = [f'Level_{i}' for i in range(max_depth)]
+        columns = [f'{i}' for i in range(max_depth)]
 
         # 创建DataFrame
         df = pd.DataFrame(padded_data, columns=columns)
@@ -83,6 +98,39 @@ class IndustryModel:
         df = df.set_index(columns)
 
         return df
+
+    def add(self, text):
+        key, values = text.split('=')
+        key = key.strip()
+        values = values.strip()[1:-1].split(',')
+        values = [v.strip() for v in values]
+
+        if not self.current_path or key == self.current_path[0]:
+            self.current_path = [key]
+        else:
+            while self.current_path and key not in self.get_value('.'.join(self.current_path), {}):
+                self.current_path.pop()
+            self.current_path.append(key)
+
+        self.set_value('.'.join(self.current_path), {v: {} for v in values})
+
+        return self
+
+    def set_leaf_value(self, path, value):
+        keys = path.split('.')
+        current = self.data
+        for key in keys[:-1]:
+            if key not in current:
+                current[key] = {}
+            current = current[key]
+        current[keys[-1]] = value
+
+    def update_from_dataframe(self, df):
+        for index, row in df.iterrows():
+            path = '.'.join(filter(None, index))
+            value = row['值']
+            if value != '':  # 只更新非空值
+                self.set_leaf_value(path, value)
 
 
 def parse_model_structure(text):

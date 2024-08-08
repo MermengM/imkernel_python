@@ -9,21 +9,21 @@ operator_a = Element("OperatorA", UnitCategory.H)
 # 将operator_a添加到工厂模型中
 factory.add_object(operator_a)
 
-# 为operator_a添加参数
+# 为operator_a添加参数 [1,2,3,4,5,6,7,8,9]
 operator_a.add_parameter(ElementParameter("input1"))
 operator_a.add_parameter(ElementParameter("input2"))
 operator_a.add_parameter(ElementParameter("output34"))
 operator_a.add_parameter(ElementParameter("param4"))
 operator_a.add_parameter(ElementParameter("param5"))
-
 # 为operator_a的参数赋值
 operator_a.input1 = 10
-operator_a.input2 = "Hello"
+operator_a.input2 = "Hello"[1][2]
 operator_a.output34 = [1, 2, 3]
 operator_a.param4 = {"key": "value"}
 operator_a.param5 = True
 operator_a.New = True  # 添加一个新的属性
 print(operator_a)
+
 #
 # # 创建另一个名为"OperatorB"的UnitObject实例，类别也为UnitCategory.H
 # operator_b = UnitObject("OperatorB", UnitCategory.H)

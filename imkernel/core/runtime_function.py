@@ -18,7 +18,7 @@ def dynamic_method_call(fun_name, script_path, **kwargs):
 
     # 获取脚本文件名（不包含路径和.py扩展名）
     script_name = script_path.split("\\")[-1].replace(".py", "")
-
+    #
     try:
         # 动态导入模块
         module = importlib.import_module(script_name)
