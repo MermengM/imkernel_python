@@ -1,6 +1,6 @@
 import pandas as pd
 
-from imkernel.model import System
+from imkernel.model import Element
 
 # 创建单元对象dataframe
 object_df = pd.DataFrame(data=[
@@ -46,9 +46,9 @@ parameter_df = pd.DataFrame(data=[
 ])
 
 # 单元模型创建
-system = System()
+system = Element()
 system.build_from_dataframes(object_df, parameter_df)
-elements_df = system.get_element_df()
+elements_df = system.to_df()
 elements_df
 
 # 添加一套数据
@@ -80,8 +80,8 @@ result = make_molded(**elevenParameters_input_dict)
 system.add_node_data("CurvePonits", result)
 # x = system.get_parameters_dict_by_node_name("CurvePonits")
 # print(x)
-result_df = system.get_element_df()
-all_df = system.get_element_df()
+result_df = system.to_df()
+all_df = system.to_df()
 system.print_tree()
 
 print(1)

@@ -1,6 +1,6 @@
 import pandas as pd
 from imkernel.core.df_utils import find_children, find_all_parents
-from imkernel.model import System
+from imkernel.model import Element
 
 parameter_df = pd.DataFrame(data=[
     ('DesginParameters', 'ElevenParameters', 'Chord_Length'),
@@ -33,10 +33,10 @@ parameter_df = pd.DataFrame(data=[
 ])
 
 # 单元参数修改
-system = System()
+system = Element()
 system.build_from_dataframes(parameter_df)
 system.add_object_to_node("ElevenParameters", "新增参数")
-Elements_df_new = system.get_element_df()
+Elements_df_new = system.to_df()
 Elements_df_new
 # 单元参数查找
 test_cases = ['DesginParameters', 'ElevenParameters', 'SectionPoints', 'BasicParameters', '不存在的节点']

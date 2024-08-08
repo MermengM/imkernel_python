@@ -1,6 +1,6 @@
 import pandas as pd
 
-from imkernel.model import System
+from imkernel.model import Element
 from imkernel.core.df_utils import find_children, find_all_parents
 
 # 创建单元对象dataframe
@@ -47,23 +47,23 @@ parameter_df = pd.DataFrame(data=[
 ])
 
 # 单元模型
-system = System()
+system = Element()
 system.build_from_dataframes(object_df)
-elements_df = system.get_element_df()
+elements_df = system.to_df()
 elements_df
 
-system.associate_parameter_to_object(parameter_info="Chord_Length", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
-system.associate_parameter_to_object(parameter_info="Upper_Max_Width", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
-system.associate_parameter_to_object(parameter_info="Upper_Max_Width_Loc", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
-system.associate_parameter_to_object(parameter_info="Upper_Angle", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
-system.associate_parameter_to_object(parameter_info="Upper_tip_coeff", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
-system.associate_parameter_to_object(parameter_info="Upper_aft_part_shape", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
-system.associate_parameter_to_object(parameter_info="Lower_max_width", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
-system.associate_parameter_to_object(parameter_info="Lower_max_width_loc", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
-system.associate_parameter_to_object(parameter_info="Lower_Angle", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
-system.associate_parameter_to_object(parameter_info="Lower_max_width_loc", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
-system.associate_parameter_to_object(parameter_info="Lower_tip_coeff", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
-system.associate_parameter_to_object(parameter_info="Lower_aft_part_shape", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
-system.associate_parameter_to_object(parameter_info="Tangent_Leading_Edge", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Chord_Length", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Upper_Max_Width", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Upper_Max_Width_Loc", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Upper_Angle", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Upper_tip_coeff", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Upper_aft_part_shape", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Lower_max_width", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Lower_max_width_loc", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Lower_Angle", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Lower_max_width_loc", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Lower_tip_coeff", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Lower_aft_part_shape", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
+system.bind_parameter_to_object(parameter_info="Tangent_Leading_Edge", object_path=['Blade', 'BladeCross', 'BladePolyLine', 'ElevenParameters'])
 
 system.print_tree()

@@ -1,4 +1,4 @@
-from imkernel.model import System, UnitObject, UnitParameter, UnitData
+from imkernel.model import Element, UnitObject, UnitParameter, UnitData
 import pandas as pd
 from imkernel.core.df_utils import find_children, find_all_parents
 
@@ -18,14 +18,14 @@ object_df = pd.DataFrame(data=[
 object_df
 
 # 单元对象修改
-system = System()
+system = Element()
 system.build_from_dataframes(object_df)
 system.add_object_to_node("BladeCross", "6新增对象7")
 BladePolyLine = system.find_node("BladeCross")
 for x in BladePolyLine.children:
     print(x.name)
 
-Elements_df_new = system.get_element_df()
+Elements_df_new = system.to_df()
 Elements_df_new
 # 单元对象查找
 test_cases = ['Blade', 'BladePolyLine', 'machine', 'cutter', '不存在的节点']

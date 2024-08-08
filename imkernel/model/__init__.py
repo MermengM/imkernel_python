@@ -17,4 +17,4 @@ from .industrymodel import IndustryModel
 from .unit_model import UnitModel
 from .unit_object import Element, UnitCategory
 from .unit_parameter import ElementParameter
-from .new_model import System, UnitData, UnitObject, UnitParameter
+from .new_model import Element, UnitData, UnitObject, UnitParameter
