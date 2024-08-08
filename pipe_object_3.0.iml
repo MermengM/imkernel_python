@@ -1,0 +1,75 @@
+[[ObjectModel]]
+Name = "管件"
+[[ObjectModel.Unit]]
+Name = "管件单元"
+Category = "管件"
+[[ObjectModel.Unit.Parameter]]
+Name = "名称"
+ParName = "name"
+Type = "string"
+
+[[ObjectModel.Unit.Parameter]]
+Name = "类型"
+ParName = "type"
+Type = "string"
+
+[[ObjectModel.Unit.Parameter]]
+Name = "文件路径"
+ParName = "file_path"
+Type = "string"
+
+[[ObjectModel.Unit.Parameter]]
+Name = "fit_length"
+ParName = "fit_length"
+Type = "float"
+
+[[ObjectModel.Unit.Parameter]]
+Name = "length"
+ParName = "length"
+Type = "float"
+
+
+[[ObjectModel.Unit]]
+Name = "XYZ"
+Category = "管件"
+[[ObjectModel.Unit.Parameter]]
+Name = "X"
+ParName = "X"
+Type = "double"
+
+[[ObjectModel.Unit.Parameter]]
+Name = "Y"
+ParName = "Y"
+Type = "double"
+
+[[ObjectModel.Unit.Parameter]]
+Name = "Z"
+ParName = "Z"
+Type = "double"
+
+
+[[ObjectModel.Unit]]
+Name = "YBC"
+Category = "管件"
+[[ObjectModel.Unit.Parameter]]
+Name = "Y"
+ParName = "Y"
+Type = "double"
+
+[[ObjectModel.Unit.Parameter]]
+Name = "B"
+ParName = "B"
+Type = "double"
+
+[[ObjectModel.Unit.Parameter]]
+Name = "C"
+ParName = "C"
+Type = "double"
+
+[[ObjectModel.Unit.Parameter]]
+Name = "R"
+ParName = "R"
+Type = "double"
+
+
+
