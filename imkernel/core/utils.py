@@ -50,8 +50,11 @@ def get_root_path():
 
 def get_algorithm_by_path(algo_file, algo_name):
     """
+    通过文件路径获取算法函数。
+    @param algo_file:算法文件的路径
+    @param algo_name:算法函数的名称
+    @return:algo_func: 算法函数，如果获取失败则返回None。
 
-    @rtype: object
     """
     try:
         # print(f"正在尝试导入算法文件: {algo_file}")

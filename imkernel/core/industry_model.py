@@ -2,7 +2,7 @@ import inspect
 import pandas as pd
 from loguru import logger
 import copy
-from imkernel import get_algorithm_by_path
+from .utils import get_algorithm_by_path
 
 
 class industry_model:
@@ -97,6 +97,18 @@ class industry_model:
             else:
                 self.element_data[key] = data_list[index]
 
+    def set_element_data(self, para_name: str, data_list: list):
+        """
+        添加单元模型数据
+        @param para_name: 参数名
+        @param data_list: 参数值列表
+        """
+        # 获取self.element_data 指定key 的 对象 而不是值
+        if para_name not in self.element_data:
+            raise Exception(f"未找到单元参数{para_name}")
+
+        self.element_data[para_name] = data_list
+
     def _get_method_parameter(self, parameter_group_name: str = None):
         """
         获取指定单元参数方法参数（组）
@@ -153,8 +165,23 @@ class industry_model:
         # 遍历 parameter_list 并检查是否已存在，然后添加到 self.element_data
         for index, key in enumerate(parameter_list):
             if key in self.method_data:
-                logger.error(f"键 '{key}' 已经存在")
+                pass
+                # logger.error(f"键 '{key}' 已经存在")
             self.method_data[key] = data_list[index]
+
+    def set_method_data(self, para_name: str, data_list: list):
+        """
+        添加方法模型数据
+        @param para_name: 参数名
+        @param data_list: 参数值列表
+        """
+        # 获取self.element_data 指定key 的 对象 而不是值
+        para_name=f"method_{para_name}"
+        if para_name not in self.method_data:
+            raise Exception(f"未找到方法参数{para_name}")
+
+        self.method_data[para_name] = data_list
+
 
     def _get_procedure_parameter(self, procedure_name: str = None):
         """
@@ -261,10 +288,58 @@ class industry_model:
         real_output = method_data_info[3]
         print(f"尝试导入方法体")
         # 获取算法
-        function = get_algorithm_by_path(method_data_info[1], method_data_info[0])
+        function = get_algorithm_by_path(method_data_info[1][0], method_data_info[0][0])
         if not function:
-            raise Exception(f"未能导入{method_data_info[1]}")
-        print(f"成功导入算法: {method_data_info[0]}")
+            raise Exception(f"未能导入{method_data_info[1][0]}")
+        print(f"成功导入算法: {method_data_info[0][0]}")
+
+        result = function(real_input)
+        # print(f"算法运行完毕，结果如下：\n{result}")
+        # logger.info(result)
+        return result
+
+
+    def run_method(self, method_name: str):
+        """
+        运行指定方法模型
+        :param method_name: 算法名
+        :return:
+        """
+        # 获取流程信息
+        # procedure	element	method
+        method_parameter_info = next((item for item in self.method_parameter if item[0] == method_name), None)
+        if method_parameter_info is None:
+            raise Exception(f"算法{method_name}不存在!")
+        else:
+            print(f"开始运行算法模型：{method_name}")
+
+        # 根据方法参数获取方法数据
+        method_data_info=[]
+        for method_par_name in method_parameter_info:
+            method_par = self.method_data[method_par_name]
+            method_data_info.append(method_par)
+
+        # 处理输入参数
+        input_parameter_name = method_parameter_info[2]
+        input_parameter_data = method_data_info[2]
+        if input_parameter_name.startswith('method_'):
+            # 从input_parameter_name中删除 method_ 获取实际参数名
+            input_parameter_name = input_parameter_name.replace('method_', '')
+
+        print(f"输入参数：{input_parameter_name}")
+        print(f"输入参数值：{input_parameter_data}")
+        # print(f"输出参数：{input_parameter_name}")
+        # real_input=method_data_info[2]
+        real_input = input_parameter_data
+
+        # 处理输出参数
+        real_output = method_data_info[3]
+        print(f"尝试导入方法体")
+        # 获取算法
+        function = get_algorithm_by_path(method_data_info[1][0], method_data_info[0][0])
+        if not function:
+            raise Exception(f"未能导入{method_data_info[1][0]}")
+        print(f"成功导入算法: {method_data_info[0][0]}")
 
         result = function(real_input)
         # print(f"算法运行完毕，结果如下：\n{result}")
@@ -297,28 +372,56 @@ class industry_model:
 
         return parameter_list
 
+    def _get_vector(self, param_type: str, parameter_group_name: str = None):
+        """
+        获取指定类型的参数（组）
+        @param param_type: 参数类型 ('element', 'method', 'procedure')
+        @param parameter_group_name: 参数组名称
+        @return:
+        """
+        if param_type == "element":
+            vector_dict = copy.deepcopy(self.element_data)
+        elif param_type == "method":
+            vector_dict = copy.deepcopy(self.method_data)
+        elif param_type == "procedure":
+            # parameter_list = copy.deepcopy(self.procedure_parameter)
+            raise ValueError(f"暂无")
+        else:
+            raise ValueError(f"未知的参数类型: {param_type}")
 
-def get_parameter_df(model, param_type: str, para_name: str = None, with_data=False):
+        if parameter_group_name:
+            if parameter_group_name in vector_dict:
+                vector_dict = vector_dict[parameter_group_name]
+
+        if not vector_dict:
+            friendly_type = self.param_type_messages.get(param_type, param_type)
+
+            raise Exception(f"未找到名为{parameter_group_name}的{friendly_type}向量")
+
+        return vector_dict
+
+
+def get_parameter_df(model, para_type: str, para_name: str = None, with_data=False):
     """
     获取当前模型中指定类型的参数（组）
-    @param param_type: 参数类型 ('element', 'method', 'procedure')
+    @param para_type: 参数类型 ('element', 'method', 'procedure')
     @param para_name: 参数组名称
     @param with_data: 是否带上数据
     @return: DataFrame
     """
-    parameter_list = model._get_parameter(param_type, para_name)
+    parameter_list = model._get_parameter(para_type, para_name)
 
-    if param_type in ['element', 'method']:
+    if para_type in ['element', 'method']:
         columns = ['element']
         max_params = max(len(item) - 1 for item in parameter_list)
         columns.extend([f'parameter{i + 1}' for i in range(max_params)])
         if with_data:
-            data_dict = model.element_data if param_type == 'element' else model.method_data
+            data_dict = model.element_data if para_type == 'element' else model.method_data
             for p_group in parameter_list:
                 for i, p in enumerate(p_group):
                     data = data_dict.get(p, f"None")
                     p_group[i] = f"{p} = {data}"
-    elif param_type == 'procedure':
+    elif para_type == 'procedure':
         columns = ['procedure', 'element', 'method']
         if with_data:
             for p_group in parameter_list:
@@ -331,9 +434,39 @@ def get_parameter_df(model, param_type: str, para_name: str = None, with_data=Fa
                 method_parameter = model._get_parameter('method', method_name)
                 p_group[2] = f"{method_name}={method_parameter}"
     else:
-        raise ValueError(f"未知的参数类型: {param_type}")
+        raise ValueError(f"未知的参数类型: {para_type}")
 
     df = pd.DataFrame(parameter_list, columns=columns)
+
+    return df
+
+
+def get_vector_df(model, para_type: str, para_name: str = None):
+    """
+    获取当前模型中指定类型的参数向量
+    @param para_type: 参数类型 ('element', 'method', 'procedure')
+    @param para_name: 参数组名称
+    @param with_data: 是否带上数据
+    @return: DataFrame
+    """
+
+    parameter_dict = model._get_vector(para_type, para_name)
+
+    # 创建DataFrame
+    df = pd.DataFrame(parameter_dict)
+
+    # 设置列名
+    num_columns = df.shape[1]
+    df.columns = [f'Param_{i + 1}' for i in range(num_columns)]
+
+    # 添加行索引
+    df.index.name = 'Row'
+    df.index = df.index + 1  # 使行索引从1开始
+
+    # 设置显示选项
+    pd.set_option('display.max_columns', None)  # 显示所有列
+    pd.set_option('display.width', None)  # 自动调整显示宽度
+    pd.set_option('display.precision', 4)  # 设置浮点数精度
 
     return df
 

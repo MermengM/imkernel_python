@@ -1,7 +1,6 @@
 import re
 import numpy as np
 import pyvista as pv
-import imageio
 from vtk import vtkTransform
 import datetime
 import asyncio
@@ -188,11 +187,11 @@ def showAnimation(NC_file_path: str, file_paths: str = None, blade_file_path:str
     # 关闭 plotter
     plotter.close()
     # 保存为 mp4
-    output_file = output_path if output_path else "machine.mp4"
-    print(f"动画生成完成! 尝试保存到{output_file}")
-    imageio.mimsave(output_file, frames, fps=60, codec="libx264")
-    # 提示完成全部操作
-    print(f"动画保存到d{output_file}")
+    # output_file = output_path if output_path else "machine.mp4"
+    # print(f"动画生成完成! 尝试保存到{output_file}")
+    # # imageio.mimsave(output_file, frames, fps=60, codec="libx264")
+    # # 提示完成全部操作
+    # print(f"动画保存到d{output_file}")
 
     
 async def showAnimationAsync(NC_file_path: str, file_paths: str = None, blade_file_path:str=None,output_path: str = None):
