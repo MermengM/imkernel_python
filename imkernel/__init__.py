@@ -1,15 +1,3 @@
-# Copyright (C) 2024 ermeng
-# imkernel is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# any later version.
-#
-# imkernel is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with imkernel.  If not, see <https://www.gnu.org/licenses/>.
-
-from . import model, core
+from .core.utils import get_algorithm_by_path, points_to_df,save_model
+from .core.industry_model import industry_model, get_parameter_df
+from .matplot import showScatter_plot
