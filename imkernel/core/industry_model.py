@@ -176,12 +176,11 @@ class industry_model:
         @param data_list: 参数值列表
         """
         # 获取self.element_data 指定key 的 对象 而不是值
-        para_name=f"method_{para_name}"
+        para_name = f"method_{para_name}"
         if para_name not in self.method_data:
             raise Exception(f"未找到方法参数{para_name}")
 
         self.method_data[para_name] = data_list
-
 
     def _get_procedure_parameter(self, procedure_name: str = None):
         """
@@ -282,7 +281,7 @@ class industry_model:
         print(f"输入参数值：{self.element_data[input_parameter_name]}")
         # print(f"输出参数：{input_parameter_name}")
         # real_input=method_data_info[2]
-        real_input = self.element_data[input_parameter_name]
+        real_input = [self.element_data[input_parameter_name]]
 
         # 处理输出参数
         real_output = method_data_info[3]
@@ -293,11 +292,10 @@ class industry_model:
             raise Exception(f"未能导入{method_data_info[1][0]}")
         print(f"成功导入算法: {method_data_info[0][0]}")
 
-        result = function(real_input)
+        result = function(*real_input)
         # print(f"算法运行完毕，结果如下：\n{result}")
         # logger.info(result)
         return result
-
 
     def run_method(self, method_name: str):
         """
@@ -314,7 +312,7 @@ class industry_model:
             print(f"开始运行算法模型：{method_name}")
 
         # 根据方法参数获取方法数据
-        method_data_info=[]
+        method_data_info = []
         for method_par_name in method_parameter_info:
             method_par = self.method_data[method_par_name]
             method_data_info.append(method_par)
@@ -483,3 +481,29 @@ def get_specific_variable(variable_name):
         return {variable_name: variables[variable_name]}
     else:
         return None
+
+
+def run_method(method_data_list):
+    """
+    运行指定数据
+    :param method_data_list: 数据
+    :return:
+    """
+    method_data_list = method_data_list[0]
+    print(method_data_list)
+
+    algo_name = method_data_list[0][0]
+    algo_file = method_data_list[1][0]
+    input_parameter = method_data_list[2]
+
+    print(f"尝试导入方法体")
+    # 获取算法
+    function = get_algorithm_by_path(algo_file,algo_name )
+    if not function:
+        raise Exception(f"未能导入{algo_file}")
+    print(f"成功导入算法: {algo_name}")
+
+    result = function(input_parameter)
+    # print(f"算法运行完毕，结果如下：\n{result}")
+    # logger.info(result)
+    return result
