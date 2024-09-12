@@ -30,39 +30,23 @@ class ElementObject:
 
     def __repr__(self):
         return self.__str__()
+class Element:
+    def __init__(self):
+        pass
+
+class Method:
+    def __init__(self):
+        pass
+
+class Procedure:
+    def __init__(self):
+        pass
+
 class System:
-    def __init__(
-            self,
-            element=None,
-            method=None,
-            procedure=None,
-            element_data=None,
-            method_parameter=None,
-            method_data=None,
-            procedure_parameter=None,
-
-    ):
-        self.element = {
-            "element": "单元模型",
-            "method": "方法模型",
-            "procedure": "过程模型"}
-        self.element_parameter = element if element is not None else []
-        self.element_parameter_name = []
-        self.element_data = {}
-        self.method_parameter = method_parameter if method_parameter is not None else []
-        self.method_data = {}
-        self.procedure_parameter = procedure_parameter if procedure_parameter is not None else []
-        self.dataframes = {
-            'element_parameter': self.element_parameter,
-            'method_parameter': self.method_parameter,
-            'procedure_parameter': self.procedure_parameter
-        }
-        #
-        # # 验证输入的DataFrame
-        # for name, df in self.dataframes.items():
-        #     if df is not None and not isinstance(df, pd.DataFrame):
-        #         raise TypeError(f"{name} 必须是dataframe")
-
+    def __init__(self):
+        self.element = Element()
+        self.method = Method()
+        self.procedure = Procedure()
 if __name__ == '__main__':
     # 创建Element实例
     element1 = ElementObject("001", "Hydrogen")
