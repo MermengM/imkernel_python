@@ -31,45 +31,51 @@ system.element.get_by_id(id:str)
 
 ## 参数层
 
-### 根据id设置参数组
+### 参数组
+
+#### 根据id设置参数组
 
 示例： ['parameter_group_A','parameter_group_B','parameter_group_C']
 
 system.element.set_parameter_group(id:str,group_name_list:list)
 
-### 根据id添加参数组
+#### 根据id添加参数组
 
-  system.element.add_parameter_group(id:str,group_name_list:list)
+system.element.add_parameter_group(id:str,group_name_list:list)
 
-### 根据索引设置参数组
+#### 根据索引设置参数组
 
 system.element.set_parameter_group(index:int,group_name_list:list)
 
-### 根据索引添加参数组
+#### 根据索引添加参数组
 
-~~system.element.add_parameter_group(index:int,group_name_list:list)~~
-
-### 示例： ['parameter_group_A','parameter_group_B','parameter_group_C']
+system.element.add_parameter_group(index:int,group_name_list:list)
 
 
 
-### 添加参数 
+### 参数 
 
- ['parameterA','parameterB','parameterC']
+#### 根据id设置参数
 
-- system.element.set_parameters(id:str,parameter_list:list[list])
-- system.element.set_parameters(index:int,parameter_list:list[list])
-- 
+示例： ['parameter_group_A','parameter_group_B','parameter_group_C']
+
+system.element.set_parameter(id:str,group_name_list:list[list])
+
+#### 根据id添加参数
+
+system.element.add_parameter(id:str,group_name_list:list[list])
+
+#### 根据索引设置参数
+
+system.element.set_parameter(index:int,group_name_list:list[list])
+
+#### 根据索引添加参数
+
+system.element.add_parameter(index:int,group_name_list:list[list])
 
 ---
 
 ## 数据层
-
-
-
-
-
-
 
 system.method.create(id,desc,parent_id)
 system.method.create('design_system', '1. 设计系统','blade_optimize_system')
