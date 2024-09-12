@@ -119,9 +119,13 @@ class System:
 if __name__ == "__main__":
     # 创建Element实例
     s = System()
-    s.element.create('1', '测试1', )
-    s.element.create('2', '测试2', '1')
-    s.element.create('3', '测试3', '2')
-    s.element.create('4', '测试4', '1')
+    s.element.create('blade_optimize_system', '0. 叶片铣削设计制造系统')
+    s.element.create('design_system', '1. 设计系统', 'blade_optimize_system')
+    s.element.create('blade', '1.1 叶片', 'design_system')
+    s.element.create('curved_surface', '1.1.1 曲面', 'blade')
+    s.element.create('manufacture_test_system', '2. 制造检测系统', 'blade_optimize_system')
+    s.element.create('physical_blade', '2.1 叶片实物', 'manufacture_test_system')
+    s.element.create('milling_machine', '2.2 铣床', 'manufacture_test_system')
+    s.element.create('test_device', '2.3 检测设备', 'manufacture_test_system')
+    s.element.create('visual_inspect_device', '2.3.1 视觉检测装置', 'test_device')
     print(s.element)
-    s.element.get_by_id(6)
