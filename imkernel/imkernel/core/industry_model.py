@@ -490,20 +490,21 @@ def run_method(method_data_list):
     :return:
     """
     method_data_list = method_data_list[0]
-    print(method_data_list)
+    # print(method_data_list)
 
     algo_name = method_data_list[0][0]
     algo_file = method_data_list[1][0]
     input_parameter = method_data_list[2]
 
-    print(f"尝试导入方法体")
+    # print(f"尝试导入方法体")
     # 获取算法
     function = get_algorithm_by_path(algo_file,algo_name )
     if not function:
         raise Exception(f"未能导入{algo_file}")
-    print(f"成功导入算法: {algo_name}")
+    print(f"算法运行中")
 
     result = function(input_parameter)
     # print(f"算法运行完毕，结果如下：\n{result}")
+    print(f"算法运行完毕")
     # logger.info(result)
     return result

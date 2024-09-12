@@ -121,7 +121,6 @@ def merge_tree(tree, param_mapping, parameter_dict):
             add_parameters(node_id, param_list)
         else:
             print(f"节点 '{node_id}' 未找到")
-            
 
 
 def save_model(notebook_path):
@@ -153,10 +152,11 @@ def save_model(notebook_path):
     # 将新的notebook保存到指定路径
     with open(new_notebook_path, 'w', encoding='utf-8') as f:
         nbformat.write(new_nb, f)
-     # 创建一个FileLink对象并显示下载链接
+    # 创建一个FileLink对象并显示下载链接
     display(FileLink(new_notebook_path, result_html_prefix="导出到: "))
     # 返回一个FileLink对象，Jupyter Notebook中会显示下载链接
-    return  new_notebook_path
+    return new_notebook_path
+
 
 def merge_method_tree(tree, param_mapping, parameter_dict):
     def add_method_parameters(node_id, method_name):
@@ -193,28 +193,52 @@ def merge_method_tree(tree, param_mapping, parameter_dict):
         else:
             print(f"节点 '{node_id}' 未在树中找到")
 
+def remove_empty_members(input_list):
+    if not isinstance(input_list, list):
+        return input_list
 
-def save_model(notebook_path, new_notebook_path):
-    with open(notebook_path, 'r', encoding='utf-8') as f:
-        nb = nbformat.read(notebook_path, as_version=4)
+    result = []
+    for item in input_list:
+        if isinstance(item, list):
+            cleaned_item = remove_empty_members(item)
+            if cleaned_item:  # 如果清理后的子列表非空，则添加
+                result.append(cleaned_item)
+        elif item not in [None, '', []]:  # 如果项目非空，则添加
+            result.append(item)
 
-    merged_content = ""
-    for cell in nb['cells']:
-        if cell['cell_type'] == 'code':
-            for x in cell['source']:
-                merged_content += x
-            merged_content += "\n\n"
-    # 创建一个新的Jupyter Notebook对象
-    nb = new_notebook()
+    return result
 
-    # 创建一个新的代码单元格，并将merged_content写入该单元格
-    first_cell = new_code_cell(source=merged_content)
 
-    # 将该单元格添加到notebook中
-    nb['cells'].append(first_cell)
+def runMethod(index: int, method_input_data, method_program, method_parameter, method_parameter_arrayindex):
+    """
+    运行方法模型
+    :param method: 方法模型列表
+    :return:
+    """
 
-    # 将notebook保存到指定路径
-    with open(new_notebook_path, 'w', encoding='utf-8') as f:
-        nbformat.write(nb, f)
+    # print(f"方法：{method_program[index]}")
+    # print(f"参数层：{method_parameter[index]}")
+    # print(f"向量：{method_parameter_arrayindex[index]}")
+    # print(f"数据层：{method_input_data[index]}")
+    
+    # 组合方法
+    full_path = method_program[index]
 
-    return new_notebook_path
+    method_body, method_name = os.path.split(full_path[0])
+
+    real_input = method_input_data[index]
+
+    # print(f"尝试导入方法体")
+    # 获取算法
+    function = get_algorithm_by_path(method_body, method_name)
+    if not function:
+        raise Exception(f"未能导入{method_name}")
+    # print(f"成功导入算法: {method_name}")
+    
+    format_input = remove_empty_members(real_input)
+
+        
+    result = function(*format_input)
+    print(f"算法运行完毕")
+    # logger.info(result)
+    return result

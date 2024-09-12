@@ -42,8 +42,15 @@ def showOneLineFromList(line_data_list, color: str = None, line_width: float = 1
     plotter.add_mesh(mesh, line_width=line_width, color=color)
     plotter.show()
 
-
 def showMultiLineFromList(lines_data_list, color: str = None, line_width: float = 1.0):
+    plotter = pv.Plotter()
+    for oneLine in lines_data_list:
+        line_data = np.array(oneLine, dtype=np.float32)
+        mesh = pv.MultipleLines(points=line_data)
+        plotter.add_mesh(mesh, line_width=line_width, color=color)
+    plotter.show()
+    
+def showMultiLineFromListDict(lines_data_list, color: str = None, line_width: float = 1.0):
     plotter = pv.Plotter()
     for oneLine in lines_data_list:
         points = []
