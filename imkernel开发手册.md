@@ -21,9 +21,17 @@ system.element.print_leaves()
 
 system.element.get_element_name()
 
+### 获取element_description
+
+system.element.get_element_description()
+
 ### 根据id 获取指定 element 
 
 system.element.get_by_id(id:str)
+
+### 根据description获取指定 element 
+
+system.element.get_by_description(description:str)
 
 ---
 
