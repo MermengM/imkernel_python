@@ -1,6 +1,0 @@
-torch
-alive_progress
-pandas
-openpyxl
-# numpy不要装最新版
-numpy==1.24.3
