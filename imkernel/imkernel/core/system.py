@@ -1,53 +1,42 @@
-
-class Node:
-    def __init__(self, tag=None, identifier=None, data=None):
-        self.tag = tag
-        self.identifier = identifier
-        self.data = data
-        self._predecessor = None
-        self._successors = []
-
-    def set_predecessor(self, predecessor):
-        self._predecessor = predecessor
-
-    def add_successor(self, successor):
-        self._successors.append(successor)
-
-    def is_leaf(self):
-        return len(self._successors) == 0
-
-    def __repr__(self):
-        return f"Node(tag={self.tag}, id={self.identifier})"
+from treelib import Tree, Node
 
 
-class ElementObject:
-    def __init__(self, id: str, name: str):
-        self.id = id
-        self.name = name
-
-    def __str__(self):
-        return f"Element(id='{self.id}', name='{self.name}')"
-
-    def __repr__(self):
-        return self.__str__()
 class Element:
+    # 单元对象的结构
+    class ElementObject:
+        def __init__(self, id: str, description: str = None, parent_id: str = None, has_parameters: bool = True) -> None:
+            self.id = id
+            self.description = description
+            self.parent_id = parent_id
+            self.has_parameters = has_parameters
+
     def __init__(self):
-        pass
+        self.tree_element = Tree()
+        self.tree_element_list = []
+
+    def create_node(self, id: str, description: str = None, parent_id: str = None, has_parameters: bool = True):
+        self.tree_element.create_node(description, id, parent_id)
+        self.tree_element_list.append(self.ElementObject(id, description, parent_id, has_parameters))
+
 
 class Method:
     def __init__(self):
         pass
 
+
 class Procedure:
     def __init__(self):
         pass
+
 
 class System:
     def __init__(self):
         self.element = Element()
         self.method = Method()
         self.procedure = Procedure()
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     # 创建Element实例
     element1 = ElementObject("001", "Hydrogen")
     element2 = ElementObject("002", "Helium")
