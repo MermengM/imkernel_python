@@ -1,3 +1,5 @@
+from typing import Optional
+
 from .node_base import NodeBase
 
 
@@ -33,7 +35,7 @@ class TreeBase:
             for child in node.children:
                 self.remove_node(child.id)
 
-    def find_node_by_id(self, node_id) -> NodeBase | None:
+    def find_node_by_id(self, node_id) -> Optional[NodeBase]:
         return self.nodes.get(node_id)
 
     def _format_node(self, node: NodeBase) -> str:

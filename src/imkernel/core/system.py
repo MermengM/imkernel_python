@@ -1,3 +1,5 @@
+from typing import Optional, Union, List
+
 from .tree_base import TreeBase
 from .node_base import NodeBase
 
@@ -33,7 +35,7 @@ class Element:
                 return node.data
             return node.id
 
-        def set_node_tag(self, node_id: str | list[str], tag: bool):
+        def set_node_tag(self, node_id: Union[str, List[str]], tag: bool):
             if isinstance(node_id, str):
                 self.nodes[node_id].is_tag = tag
             elif isinstance(node_id, list):
@@ -104,12 +106,12 @@ class Element:
             node_description_list.append(node.description)
         return node_description_list
 
-    def get_by_id(self, id: str) -> NodeBase | None:
+    def get_by_id(self, id: str) -> Optional[NodeBase]:
         """
         根据id 获取指定 element
         :param id:唯一标识符
         """
-        node: NodeBase | None = self.tree_element.find_node_by_id(id)
+        node: Optional[NodeBase] = self.tree_element.find_node_by_id(id)
         return node
 
     def get_by_description(self, description: str) -> list[ElementObject]:

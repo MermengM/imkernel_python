@@ -1,4 +1,3 @@
-
 # imkernel Python 包使用手册
 
 ## 目录
@@ -30,6 +29,7 @@ imkernel 包主要包含以下模块:
 - `ShowModel` 三维展示模块
 
 ## 类
+
 ### industry_model
 
 #### `class industry_model`
@@ -70,9 +70,13 @@ imkernel 包主要包含以下模块:
 ## API 参考
 
 ### core
+
 - `search_node(tree: Tree,node_identifier:str) -> str`
+
 ### ShowModel
-- ... 
+
+- ...
+
 ## 使用示例
 
 ---
@@ -94,7 +98,7 @@ imkernel 包主要包含以下模块:
 
 ```python
 from treelib import Tree
-from imkernel.core import search_node
+from src.core import search_node
 
 # 创建示例树结构
 tree = Tree()
@@ -106,6 +110,7 @@ tree.create_node("Node", "node", parent="child")
 hierarchy = search_node(tree, "node")
 print(hierarchy)  # 输出: Root -> Child -> Node
 ```
+
 ---
 
 ## `get_algorithm_by_path` 方法
@@ -129,7 +134,7 @@ print(hierarchy)  # 输出: Root -> Child -> Node
 ### 示例用法
 
 ```python
-from imkernel.core import get_algorithm_by_path
+from src.core import get_algorithm_by_path
 
 # 指定算法文件路径和函数名称
 algo_file = r"E:\path\to\algorithm.py"

@@ -1,5 +1,4 @@
-from imkernel import imkernel as kernel
-
+from src import imkernel as kernel
 
 if __name__ == "__main__":
     # 创建Element实例

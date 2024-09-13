@@ -1,43 +1,10 @@
 import importlib.util
 import sys
-import nbformat
-from nbformat.v4 import new_notebook, new_code_cell
-from IPython.display import FileLink
 import json
 import os
 import pandas as pd
 from treelib import Tree
-import nbformat
 from nbformat.v4 import new_notebook, new_code_cell
-
-
-def search_node(tree: Tree, node_identifier):
-    """
-    寻找节点的层级关系并输出
-    :param tree: 树对象
-    :param node_identifier: 节点标识符
-    :return: 节点层级关系字符串
-    """
-    #
-    node = tree.get_node(node_identifier)
-    if node is None:
-        # 如果通过 id 找不到,尝试通过 tag 遍历所有节点，并返回列表
-        matching_nodes = list(tree.filter_nodes(lambda n: n.tag == node_identifier))
-        if matching_nodes:
-            node = matching_nodes[0]
-        else:
-            pass
-
-    # 获取节点的所有祖先
-    hierarchy = []
-    current = node
-    while current is not None:
-        hierarchy.insert(0, current.tag)
-        current = tree.parent(current.identifier)
-    if not hierarchy:
-        raise Exception(f"找不到节点{node_identifier}")
-
-    return ' -> '.join(hierarchy)
 
 
 def get_root_path():
@@ -193,6 +160,7 @@ def merge_method_tree(tree, param_mapping, parameter_dict):
         else:
             print(f"节点 '{node_id}' 未在树中找到")
 
+
 def remove_empty_members(input_list):
     if not isinstance(input_list, list):
         return input_list
@@ -220,7 +188,7 @@ def runMethod(index: int, method_input_data, method_program, method_parameter, m
     # print(f"参数层：{method_parameter[index]}")
     # print(f"向量：{method_parameter_arrayindex[index]}")
     # print(f"数据层：{method_input_data[index]}")
-    
+
     # 组合方法
     full_path = method_program[index]
 
@@ -234,10 +202,9 @@ def runMethod(index: int, method_input_data, method_program, method_parameter, m
     if not function:
         raise Exception(f"未能导入{method_name}")
     # print(f"成功导入算法: {method_name}")
-    
+
     format_input = remove_empty_members(real_input)
 
-        
     result = function(*format_input)
     print(f"算法运行完毕")
     # logger.info(result)

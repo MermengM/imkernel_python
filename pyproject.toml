@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "imkernel"
-version = "1.1.1"
+version = "1.1.7"
 authors = [
     { name = "ermeng", email = "ermeng@ermeng.fun" },
 ]
@@ -25,7 +25,6 @@ dependencies = [
     "pandas",
     "loguru",
     "jupyterlab",
-    "treelib",
     "matplotlib",
     "pyvista",
     "vtk",
@@ -38,5 +37,4 @@ dependencies = [
 "Bug Tracker" = "https://github.com/MermengM/imkernel_python/issues"
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["imkernel*"]
+where = ["src"]

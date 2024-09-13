@@ -9,7 +9,6 @@ geomdl
 scipy
 jupyterlab-language-pack-zh-CN
 ipywidgets
-torch
 alive_progress
 pandas
 openpyxl
@@ -17,3 +16,7 @@ jupyter-server-proxy
 loguru
 trimesh
 imageio
+setuptools
+wheel
+twine
+build

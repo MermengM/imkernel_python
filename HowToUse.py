@@ -1,4 +1,4 @@
-from imkernel import imkernel as kernel
+from imkernel import System
 
-s = kernel.System()
-print(s)
+a = System
+print(a)
