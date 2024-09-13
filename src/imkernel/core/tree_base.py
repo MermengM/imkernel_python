@@ -41,11 +41,15 @@ class TreeBase:
     def _format_node(self, node: NodeBase) -> str:
         return node.id
 
-    def _print_tree(self, node: NodeBase, prefix: str = "", is_last: bool = True) -> str:
+    def _print_tree(self, node: NodeBase, prefix: str = "", is_last: bool = True, is_root: bool = False) -> str:
         """Helper method to print the tree structure"""
-        connector = "└── " if is_last else "├── "
-        result = prefix + connector + f"{self._format_node(node)}\n"
-        prefix += "    " if is_last else "│   "
+        if not is_root:  # 如果不是根节点，才加连接符号
+            connector = "└── " if is_last else "├── "
+            result = prefix + connector + f"{self._format_node(node)}\n"
+            prefix += "    " if is_last else "│   "
+        else:
+            result = f"{self._format_node(node)}\n"  # 根节点不加连接符号
+
         children = node.children
         for i, child in enumerate(children):
             result += self._print_tree(child, prefix, i == len(children) - 1)
@@ -54,7 +58,7 @@ class TreeBase:
     def __str__(self) -> str:
         tree_str = ""
         for root in self.roots.values():
-            tree_str += self._print_tree(root)
+            tree_str += self._print_tree(root, is_root=True)
         return tree_str
 
 
