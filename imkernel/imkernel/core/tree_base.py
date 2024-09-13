@@ -1,4 +1,4 @@
-from node_base import NodeBase
+from .node_base import NodeBase
 
 
 class TreeBase:

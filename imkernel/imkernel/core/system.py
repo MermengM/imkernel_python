@@ -1,5 +1,5 @@
-from tree_base import TreeBase
-from node_base import NodeBase
+from .tree_base import TreeBase
+from .node_base import NodeBase
 
 
 class Element:
@@ -8,8 +8,10 @@ class Element:
         def __init__(self, id: str, description: str = None, is_tag: bool = True) -> None:
             super().__init__(id=id, data=None)
             self.id = id
-            self.description = description
-            self.is_tag = is_tag
+            self.description: str = description
+            self.is_tag: bool = is_tag
+            # list里面每一个表示一个参数组，每个参数组是一个字典，字典的key为参数组名称，value为参数组包含的具体参数
+            self.parameter_list: list[dict] = []
 
     class ElementTree(TreeBase):
         def __init__(self, print_format="id"):
@@ -84,53 +86,65 @@ class Element:
         """
         print(self.tree_element.__str__())
 
-    def get_element_id(self):
+    def get_element_id(self) -> list[str]:
         """
         展示所有单元对象唯一标识符（除分组节点）
         """
-        node_description_list = []
+        node_description_list: list[str] = []
         for node in self.tree_element.get_no_tag_nodes():
             node_description_list.append(node.id)
         return node_description_list
 
-    def get_element_description(self):
+    def get_element_description(self) -> list[str]:
         """
         展示所有单元对象介绍（除分组节点）
         """
-        node_description_list = []
+        node_description_list: list[str] = []
         for node in self.tree_element.get_no_tag_nodes():
             node_description_list.append(node.description)
         return node_description_list
 
-    def get_by_id(self, id: str):
+    def get_by_id(self, id: str) -> NodeBase | None:
         """
         根据id 获取指定 element
         :param id:唯一标识符
         """
-        node = self.tree_element.find_node_by_id(id)
+        node: NodeBase | None = self.tree_element.find_node_by_id(id)
         return node
 
-    def get_by_description(self, description: str):
+    def get_by_description(self, description: str) -> list[ElementObject]:
         """
         根据 description 获取指定 element
         :param description:描述
         """
-        nodes = self.tree_element.find_node_by_description(description=description)
+        nodes: list[Element.ElementObject] = self.tree_element.find_node_by_description(description=description)
         return nodes
 
     # endregion
 
     # region 参数层
-    def set_parameter_group(self, id: str, group_name_list: list):
+    def set_parameter_group(self, id: str, group_name_list: list[str]):
         """
         根据id设置参数组
         :param id:
         :param group_name_list:
         """
-
-        raise Exception("TODO")
+        node: Element.ElementObject = self.tree_element.find_node_by_id(id)
+        for group_name in group_name_list:
+            node.parameter_list.append({"group_name": group_name, "parameters": []})
 
     #     示例： ['parameter_group_A', 'parameter_group_B', 'parameter_group_C']
+
+    def set_parameter(self, id: str, parameter_name_list_list: list[list[str]]):
+        """
+        根据id设置详细参数
+        :param id:
+        :param parameter_name_list_list:
+        """
+        node: Element.ElementObject = self.tree_element.find_node_by_id(id)
+        for index, group_name in enumerate(node.parameter_list):
+            group_name["parameters"] = parameter_name_list_list[index]
+
     # endregion
 
 
@@ -149,28 +163,3 @@ class System:
         self.element = Element()
         self.method = Method()
         self.procedure = Procedure()
-
-
-if __name__ == "__main__":
-    # 创建Element实例
-    s = System()
-    s.element.create("blade_optimize_system", "0. 叶片铣削设计制造系统")
-    s.element.create("design_system", "1. 设计系统", "blade_optimize_system", True)
-    s.element.create("blade", "1.1 叶片", "design_system")
-    s.element.create("curved_surface", "1.1.1 曲面", "blade")
-    s.element.create("manufacture_test_system", "2. 制造检测系统", "blade_optimize_system", True)
-    s.element.create("physical_blade", "2.1 叶片实物", "manufacture_test_system")
-    s.element.create("milling_machine", "2.2 铣床", "manufacture_test_system")
-    s.element.create("test_device", "2.3 检测设备", "manufacture_test_system", True)
-    s.element.create("visual_inspect_device", "2.3.1 视觉检测装置", "test_device")
-
-    print(s.element)
-
-    s.element.change_print_format("description")
-    print(s.element)
-
-    list = s.element.get_by_description("1")
-    for elementObject in list:
-        print(elementObject.description)
-
-    print(s.element.get_element_id())
