@@ -149,12 +149,16 @@ class IndustryModel:
     @staticmethod
     def set_parameter_group(node: SystemNode, group_name_list: list[str]):
         """
-        设置节点参数组
-        :param node:节点
-        :param group_name_list:
+        设置节点参数组，避免重复添加
+        :param node: 节点
+        :param group_name_list: 参数组名称列表
         """
+        # 遍历 group_name_list 并检查是否已经存在该参数组
         for group_name in group_name_list:
-            node.parameter_list.append({"group_name": group_name, "parameters": []})
+            # 检查是否已存在具有相同 group_name 的参数组
+            if not any(group_name == param_group['group_name'] for param_group in node.parameter_list):
+                # 如果不存在，则添加新的参数组
+                node.parameter_list.append({"group_name": group_name, "parameters": []})
 
     def set_parameter_group_by_id(self, id: str, group_name_list: list[str]):
         """
@@ -174,8 +178,12 @@ class IndustryModel:
         """
 
         for index, group_name in enumerate(parameter_name_list_list):
-            node.parameter_list[index]['parameters'] = group_name
-            # node.parameter_list[] = group_name
+            # 检查 index 是否在 node.parameter_list 范围内
+            if index < len(node.parameter_list):
+                node.parameter_list[index]['parameters'] = group_name
+            else:
+                # 如果超出范围，则跳过
+                print(f"Index {index} exceeds the length of parameter_list. Skipping.")
 
     def set_parameter_by_id(self, id: str, parameter_name_list_list: list[list[str]]):
         """
