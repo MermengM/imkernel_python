@@ -1,5 +1,7 @@
 from typing import Optional, Union, List, Dict
 
+import pandas as pd
+
 from .tree_base import TreeBase
 from .node_base import NodeBase
 from enum import Enum
@@ -87,7 +89,7 @@ class IndustryTree(TreeBase):
         return self.nodes.get(node_id)
 
 
-class BaseIndustryModel:
+class IndustryModel:
     """
     三维四层统一模型基类
     """
@@ -117,181 +119,105 @@ class BaseIndustryModel:
         """
         print(self.tree.print_desc())
 
+    def name(self):
+        """
+        获取name的dataframe
+        :return:
+        """
+        return pd.DataFrame(self._get_id_list(), columns=['element_name'])
+
     def get_by_id(self, id: str) -> Optional[NodeBase]:
+        """
+        根据ID查找节点
+        :param id:
+        :return:
+        """
         return self.tree.find_node_by_id(id)
 
     def get_by_description(self, desc: str) -> list[SystemNode]:
+        """
+        根据描述查找节点
+        :param desc:
+        :return:
+        """
         return self.tree.find_node_by_description(desc)
 
-    def get_ids(self) -> list[str]:
+    def _get_id_list(self) -> list[str]:
         return [node.id for node in self.tree.get_no_tag_nodes()]
 
-    def get_descriptions(self) -> list[str]:
-        return [node.description for node in self.tree.get_no_tag_nodes()]
-
-    def set_parameter_group(self, id: str, group_name_list: list[str]):
-        node = self.tree.find_node_by_id(id)
+    # region 参数层
+    @staticmethod
+    def set_parameter_group(node: SystemNode, group_name_list: list[str]):
+        """
+        设置节点参数组
+        :param node:节点
+        :param group_name_list:
+        """
         for group_name in group_name_list:
             node.parameter_list.append({"group_name": group_name, "parameters": []})
 
-    def set_parameter(self, id: str, parameter_name_list_list: list[list[str]]):
+    def set_parameter_group_by_id(self, id: str, group_name_list: list[str]):
+        """
+        根据Id设置参数组
+        :param id:
+        :param group_name_list:
+        """
         node = self.tree.find_node_by_id(id)
-        for index, group_name in enumerate(node.parameter_list):
-            group_name["parameters"] = parameter_name_list_list[index]
+        self.set_parameter_group(node, group_name_list)
+
+    @staticmethod
+    def set_parameter(node: SystemNode, parameter_name_list_list: list[list[str]]):
+        """
+        设置节点参数
+        :param node:节点
+        :param parameter_name_list_list:
+        """
+
+        for index, group_name in enumerate(parameter_name_list_list):
+            node.parameter_list[index]['parameters'] = group_name
+            # node.parameter_list[] = group_name
+
+    def set_parameter_by_id(self, id: str, parameter_name_list_list: list[list[str]]):
+        """
+        根据节点Id设置参数
+        :param id:
+        :param parameter_name_list_list:
+        """
+        node = self.tree.find_node_by_id(id)
+        self.set_parameter(node, parameter_name_list_list)
+
+    def _get_all_parameter_name_list(self) -> list[str]:
+        rlist = []
+        for node_id, node in self.tree.nodes.items():
+            node: SystemNode
+            rlist.append([node_id] + [p['group_name'] for p in node.parameter_list])
+        return rlist
+
+    def show_parameters(self):
+        input_list = self._get_all_parameter_name_list()
+        max_len = max(len(sublist) for sublist in input_list)
+
+        normalized_list = [sublist + [''] * (max_len - len(sublist)) for sublist in input_list]
+
+        df = pd.DataFrame(normalized_list)
+
+        return df
+    # endregion 参数层
 
 
-class Element(BaseIndustryModel):
+class Element(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Element)
 
 
-class Method(BaseIndustryModel):
+class Method(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Method)
 
 
-class Procedure(BaseIndustryModel):
+class Procedure(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Procedure)
-
-
-#
-# class Element:
-#     # 单元对象的结构
-#
-#     class ElementTree(TreeBase):
-#         def __init__(self, print_format="id"):
-#             super().__init__()
-#             self.print_format = print_format
-#
-#         def _format_node(self, node: BaseSystemObject) -> str:
-#             """
-#             限定不同参数条件下树的输出格式
-#             :param node:节点对象
-#             """
-#             if self.print_format == "id":
-#                 return node.id
-#             if self.print_format == "description":
-#                 return node.description
-#             if self.print_format == "is_tag":
-#                 return node.is_tag
-#             if self.print_format == "data":
-#                 return node.data
-#             return node.id
-#
-#         def set_node_tag(self, node_id: Union[str, List[str]], tag: bool):
-#             if isinstance(node_id, str):
-#                 self.nodes[node_id].is_tag = tag
-#             elif isinstance(node_id, list):
-#                 for node_id_ in node_id:
-#                     self.nodes[node_id_].is_tag = tag
-#
-#         def get_no_tag_nodes(self) -> list[BaseSystemObject]:
-#             """
-#             获取所有非分组标签节点
-#             """
-#             return [node for node in self.nodes.values() if node.is_tag is False]
-#
-#         def find_node_by_description(self, description: str) -> list[BaseSystemObject]:
-#             matched_nodes = []
-#             for node in self.nodes.values():
-#                 if description in node.description:
-#                     matched_nodes.append(node)
-#             return matched_nodes
-#
-#     def __init__(self):
-#         self.tree_element = Element.ElementTree()
-#
-#     def __str__(self) -> str:
-#         """
-#         重载默认输出
-#         """
-#         return self.tree_element.__str__()
-#
-#     # region 单元层
-#     def create(self, id: str, description: str = None, parent_id: str = None, is_tag: bool = False):
-#         """
-#         创建单元对象节点
-#         :param id:唯一标识符
-#         :param description:中文描述
-#         :param parent_id:父节点唯一标识符号（留空则为添加根节点）
-#         :param is_tag:是否是分组标签（分组标签不会在列表中显示/没有参数）
-#         """
-#         self.tree_element.add_node(BaseSystemObject(industry_model_type=IndustryModelType.Element, id=id, description=description, is_tag=is_tag), parent_id)
-#
-#     def change_print_format(self, print_format: str):
-#         """
-#         设置打印格式
-#         :param print_format:打印格式，可选值：id, description, is_tag, data
-#         """
-#         self.tree_element.print_format = print_format
-#
-#     def print_tree(self):
-#         """
-#         输出单元模型树结构（字符串形式）
-#         """
-#         print(self.tree_element.__str__())
-#
-#     def get_element_id(self) -> list[str]:
-#         """
-#         展示所有单元对象唯一标识符（除分组节点）
-#         """
-#         node_description_list: list[str] = []
-#         for node in self.tree_element.get_no_tag_nodes():
-#             node_description_list.append(node.id)
-#         return node_description_list
-#
-#     def get_element_description(self) -> list[str]:
-#         """
-#         展示所有单元对象介绍（除分组节点）
-#         """
-#         node_description_list: list[str] = []
-#         for node in self.tree_element.get_no_tag_nodes():
-#             node_description_list.append(node.description)
-#         return node_description_list
-#
-#     def get_by_id(self, id: str) -> Optional[NodeBase]:
-#         """
-#         根据id 获取指定 element
-#         :param id:唯一标识符
-#         """
-#         node: Optional[NodeBase] = self.tree_element.find_node_by_id(id)
-#         return node
-#
-#     def get_by_description(self, description: str) -> list[BaseSystemObject]:
-#         """
-#         根据 description 获取指定 element
-#         :param description:描述
-#         """
-#         nodes: list[BaseSystemObject] = self.tree_element.find_node_by_description(description=description)
-#         return nodes
-#
-#     # endregion
-#
-#     # region 参数层
-#     def set_parameter_group(self, id: str, group_name_list: list[str]):
-#         """
-#         根据id设置参数组
-#         :param id:
-#         :param group_name_list:
-#         """
-#         node: Element.ElementObject = self.tree_element.find_node_by_id(id)
-#         for group_name in group_name_list:
-#             node.parameter_list.append({"group_name": group_name, "parameters": []})
-#
-#     #     示例： ['parameter_group_A', 'parameter_group_B', 'parameter_group_C']
-#
-#     def set_parameter(self, id: str, parameter_name_list_list: list[list[str]]):
-#         """
-#         根据id设置详细参数
-#         :param id:
-#         :param parameter_name_list_list:
-#         """
-#         node: Element.ElementObject = self.tree_element.find_node_by_id(id)
-#         for index, group_name in enumerate(node.parameter_list):
-#             group_name["parameters"] = parameter_name_list_list[index]
-#
-#     # endregion
 
 
 class System:
