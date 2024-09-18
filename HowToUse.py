@@ -22,17 +22,17 @@ print(s.element.get_by_id('test_device'))
 #
 # print(s.element.get_element_id())
 #
-s.element.set_parameter_group_by_id("blade_optimize_system", [])
-s.element.set_parameter_group_by_id("blade", ["blade_CAD", 0, 0])
-s.element.set_parameter_group_by_id("curved_surface", ["eleven_parameter", 0])
-s.element.set_parameter_group_by_id("physical_blade", ["path_parameter"])
-s.element.set_parameter_group_by_id("milling_machine", ["technological_parameter"])
-s.element.set_parameter_group_by_id("visual_inspect_device", [])
+s.element.parameter_group("blade_optimize_system", [])
+s.element.parameter_group("blade", ["blade_CAD", 89, 68, 1])
+s.element.parameter_group("curved_surface", ["eleven_parameter", 0])
+s.element.parameter_group("physical_blade", ["path_parameter", 1, 2])
+s.element.parameter_group("milling_machine", ["technological_parameter"])
+s.element.parameter_group("visual_inspect_device", [])
 print(s)
 #
-s.element.set_parameter_by_id("blade_optimize_system", [])
-s.element.set_parameter_by_id("blade", [["obj_file"], 0, 0])
-s.element.set_parameter_by_id(
+s.element.parameter("blade_optimize_system", [])
+s.element.parameter("blade", [["obj_file"], 0, 0])
+s.element.parameter(
     "curved_surface",
     [
         [
@@ -52,43 +52,9 @@ s.element.set_parameter_by_id(
         ]
     ],
 )
-s.element.set_parameter_by_id("physical_blade", [["Cutter_diameter", "Cutting_depth", "Residual_height"]])
-s.element.set_parameter_by_id("milling_machine", [["Cutter_length", "Cutter_angle", "Feed_speed", "Spindle_speed"]])
-s.element.set_parameter_by_id("visual_inspect_device", [])
-
-s.element.set_parameter_group_by_id("blade_optimize_system", [])
-s.element.set_parameter_group_by_id("blade", ["blade_CAD", 0, 0])
-s.element.set_parameter_group_by_id("curved_surface", ["eleven_parameter", 0])
-s.element.set_parameter_group_by_id("physical_blade", ["path_parameter"])
-s.element.set_parameter_group_by_id("milling_machine", ["technological_parameter"])
-s.element.set_parameter_group_by_id("visual_inspect_device", [])
-print(s)
-#
-s.element.set_parameter_by_id("blade_optimize_system", [])
-s.element.set_parameter_by_id("blade", [["obj_file"], 0, 0])
-s.element.set_parameter_by_id(
-    "curved_surface",
-    [
-        [
-            "Chord_Length",
-            "Upper_Max_Width",
-            "Upper_Max_Width_Loc",
-            "Upper_Angle",
-            "Upper_tip_coeff",
-            "Upper_aft_part_shape",
-            "Lower_max_width",
-            "Lower_max_width_loc",
-            "Lower_Angle",
-            "Lower_tip_coeff",
-            "Lower_aft_part_shape",
-            "Tangent_Leading_Edge",
-            "spanwise_length",
-        ]
-    ],
-)
-s.element.set_parameter_by_id("physical_blade", [["Cutter_diameter", "Cutting_depth", "Residual_height"]])
-s.element.set_parameter_by_id("milling_machine", [["Cutter_length", "Cutter_angle", "Feed_speed", "Spindle_speed"]])
-s.element.set_parameter_by_id("visual_inspect_device", [])
+s.element.parameter("physical_blade", [["Cutter_diameter", "Cutting_depth", "Residual_height"]])
+s.element.parameter("milling_machine", [["Cutter_length", "Cutter_angle", "Feed_speed", "Spindle_speed"]])
+s.element.parameter("visual_inspect_device", [])
 
 a = s.element.show_parameters()
 print(s)

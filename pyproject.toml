@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "imkernel"
-version = "1.2.0"
+version = "1.2.3"
 authors = [
     { name = "ermeng", email = "ermeng@ermeng.fun" },
 ]
@@ -15,7 +15,7 @@ requires-python = ">=3.9"
 classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.9",
 ]
 keywords = ["IMKernel", "kernel", "IM", "IL"]
 

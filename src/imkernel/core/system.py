@@ -169,6 +169,9 @@ class IndustryModel:
         node = self.tree.find_node_by_id(id)
         self.set_parameter_group(node, group_name_list)
 
+    # 给 set_parameter_group_by_id 取别名
+    parameter_group = set_parameter_group_by_id
+
     @staticmethod
     def set_parameter(node: SystemNode, parameter_name_list_list: list[list[str]]):
         """
@@ -193,6 +196,9 @@ class IndustryModel:
         """
         node = self.tree.find_node_by_id(id)
         self.set_parameter(node, parameter_name_list_list)
+
+    # 给 set_parameter_group_by_id 取别名
+    parameter = set_parameter_by_id
 
     def _get_all_parameter_name_list(self) -> list[str]:
         rlist = []
