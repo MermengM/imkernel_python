@@ -200,12 +200,41 @@ class IndustryModel:
     # 给 set_parameter_group_by_id 取别名
     parameter = set_parameter_by_id
 
-    def _get_all_parameter_name_list(self) -> list[str]:
-        rlist = []
+    def _get_all_parameter_group_name_list(self) -> list[str]:
+        """
+        组合单元对象+参数组1、2、3、4...
+        :return:
+        """
+        output_list = []
         for node_id, node in self.tree.nodes.items():
             node: SystemNode
-            rlist.append([node_id] + [p['group_name'] for p in node.parameter_list])
-        return rlist
+            output_list.append([node_id] + [p['group_name'] for p in node.parameter_list])
+        return output_list
+
+    def _get_all_parameter_name_list(self) -> list[str]:
+        """
+        组合单元对象+参数1、2、3、4...
+        :return:
+        """
+        output_list = []
+        for node_id, node in self.tree.nodes.items():
+            node: SystemNode
+            output_list.append([node_id] + [p['parameters'] for p in node.parameter_list])
+        return output_list
+
+    def show_parameters_group(self):
+        input_list = self._get_all_parameter_group_name_list()
+        max_len = max(len(sublist) for sublist in input_list)
+
+        normalized_list = [sublist + [''] * (max_len - len(sublist)) for sublist in input_list]
+
+        df = pd.DataFrame(normalized_list)
+
+        # 设置列名
+        columns = ['element_type'] + [f'parameter_type_{i}' for i in range(1, df.shape[1])]
+        df.columns = columns
+
+        return df
 
     def show_parameters(self):
         input_list = self._get_all_parameter_name_list()
@@ -214,6 +243,10 @@ class IndustryModel:
         normalized_list = [sublist + [''] * (max_len - len(sublist)) for sublist in input_list]
 
         df = pd.DataFrame(normalized_list)
+
+        # 设置列名
+        columns = ['element_type'] + [f'parameter_index_{i}' for i in range(1, df.shape[1])]
+        df.columns = columns
 
         return df
     # endregion 参数层

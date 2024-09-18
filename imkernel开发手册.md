@@ -45,6 +45,8 @@ system.element.set_parameter_group(node: SystemNode, group_name_list: list[str])
 示例： ['parameter_group_A','parameter_group_B','parameter_group_C']
 
 system.element.set_parameter_group_by_id(id: str, group_name_list: list[str])
+#### 展示参数组Dataframe
+system.element.show_parameters_group()
 
 ### 参数 
 
@@ -57,14 +59,8 @@ system.element.set_parameter(node: SystemNode, parameter_name_list_list: list[li
 示例： ['parameter_group_A','parameter_group_B','parameter_group_C']
 
 system.element.set_parameter_by_id(id: str, parameter_name_list_list: list[list[str]])
-
-#### 根据索引设置参数
-
-system.element.set_parameter(index:int,group_name_list:list[list])
-
-#### 根据索引添加参数
-
-system.element.add_parameter(index:int,group_name_list:list[list])
+#### 展示参数Dataframe
+system.element.show_parameters()
 
 ---
 

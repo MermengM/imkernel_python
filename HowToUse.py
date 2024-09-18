@@ -57,6 +57,7 @@ s.element.parameter("milling_machine", [["Cutter_length", "Cutter_angle", "Feed_
 s.element.parameter("visual_inspect_device", [])
 
 a = s.element.show_parameters()
+g = s.element.show_parameters_group()
 print(s)
 # alist = s.element.tree_element.get_no_tag_nodes()
 # for node in alist:
