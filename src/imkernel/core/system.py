@@ -529,6 +529,35 @@ class Method(IndustryModel):
 
         return df
 
+    def show_parameters_group(self):
+        input_list = self._get_all_input_parameter_group_name_list()
+        output_list = self._get_all_output_parameter_group_name_list()
+        max_input_len = max(len(sublist) for sublist in input_list)
+        max_output_len = max(len(sublist) for sublist in output_list)
+
+        normalized_list = []
+        for i, itemIter in enumerate(input_list):
+            rowData = []
+            for j in range(max_input_len):
+                if j < len(input_list[i]):
+                    rowData.append(input_list[i][j])
+                else:
+                    rowData.append("")
+            for k in range(max_output_len):
+                if k == 0:
+                    pass
+                elif k < len(output_list[i]):
+                    rowData.append(output_list[i][k])
+                else:
+                    rowData.append("")
+            normalized_list.append(rowData)
+
+        df = pd.DataFrame(normalized_list)
+        # 设置列名
+        columns = ["element_type"] + [f"input_{i}" for i in range(1, max_input_len)] + [f"output_{i}" for i in range(1, max_output_len)]
+        df.columns = columns
+        return df
+
     def show_input_parameters(self):
         input_list = self._get_all_input_parameter_name_list()
         max_len = max(len(sublist) for sublist in input_list)
@@ -555,6 +584,35 @@ class Method(IndustryModel):
         columns = ["element_type"] + [f"parameter_index_{i}" for i in range(1, df.shape[1])]
         df.columns = columns
 
+        return df
+
+    def show_parameters(self):
+        input_list = self._get_all_input_parameter_name_list()
+        output_list = self._get_all_output_parameter_name_list()
+        max_input_len = max(len(sublist) for sublist in input_list)
+        max_output_len = max(len(sublist) for sublist in output_list)
+
+        normalized_list = []
+        for i, itemIter in enumerate(input_list):
+            rowData = []
+            for j in range(max_input_len):
+                if j < len(input_list[i]):
+                    rowData.append(input_list[i][j])
+                else:
+                    rowData.append("")
+            for k in range(max_output_len):
+                if k == 0:
+                    pass
+                elif k < len(output_list[i]):
+                    rowData.append(output_list[i][k])
+                else:
+                    rowData.append("")
+            normalized_list.append(rowData)
+
+        df = pd.DataFrame(normalized_list)
+        # 设置列名
+        columns = ["element_type"] + [f"input_{i}" for i in range(1, max_input_len)] + [f"output_{i}" for i in range(1, max_output_len)]
+        df.columns = columns
         return df
 
 
