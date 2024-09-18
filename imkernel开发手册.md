@@ -66,13 +66,16 @@ system.element.show_parameters()
 
 ## 数据层
 
-system.method.create(id,desc,parent_id)
+为指定参数添加数据
+
+### system.method.create(id,desc,parent_id)
+
 system.method.create('design_system', '1. 设计系统','blade_optimize_system')
 
 system.procedure.create(id,desc,parent_id)
 system.procedure.create('design_system', '1. 设计系统','blade_optimize_system')
 
-# 方法模型
+# 方法模型	
 
 # 过程模型
 
