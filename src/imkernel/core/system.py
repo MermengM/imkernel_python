@@ -124,7 +124,7 @@ class IndustryModel:
         获取name的dataframe
         :return:
         """
-        return pd.DataFrame(self._get_id_list(), columns=['element_name'])
+        return pd.DataFrame(self._get_id_list(), columns=["element_name"])
 
     def get_by_id(self, id: str) -> Optional[NodeBase]:
         """
@@ -156,7 +156,7 @@ class IndustryModel:
         # 遍历 group_name_list 并检查是否已经存在该参数组
         for group_name in group_name_list:
             # 检查是否已存在具有相同 group_name 的参数组
-            if not any(group_name == param_group['group_name'] for param_group in node.parameter_list):
+            if not any(group_name == param_group["group_name"] for param_group in node.parameter_list):
                 # 如果不存在，则添加新的参数组
                 node.parameter_list.append({"group_name": group_name, "parameters": []})
 
@@ -183,7 +183,7 @@ class IndustryModel:
         for index, group_name in enumerate(parameter_name_list_list):
             # 检查 index 是否在 node.parameter_list 范围内
             if index < len(node.parameter_list):
-                node.parameter_list[index]['parameters'] = group_name
+                node.parameter_list[index]["parameters"] = group_name
             else:
                 # 如果超出范围，则跳过
                 print(f"Index {index} exceeds the length of parameter_list. Skipping.")
@@ -208,7 +208,8 @@ class IndustryModel:
         output_list = []
         for node_id, node in self.tree.nodes.items():
             node: SystemNode
-            output_list.append([node_id] + [p['group_name'] for p in node.parameter_list])
+            if not node.is_tag:
+                output_list.append([node_id] + [p["group_name"] for p in node.parameter_list])
         return output_list
 
     def _get_all_parameter_name_list(self) -> list[str]:
@@ -219,19 +220,20 @@ class IndustryModel:
         output_list = []
         for node_id, node in self.tree.nodes.items():
             node: SystemNode
-            output_list.append([node_id] + [p['parameters'] for p in node.parameter_list])
+            if not node.is_tag:
+                output_list.append([node_id] + [p["parameters"] for p in node.parameter_list])
         return output_list
 
     def show_parameters_group(self):
         input_list = self._get_all_parameter_group_name_list()
         max_len = max(len(sublist) for sublist in input_list)
 
-        normalized_list = [sublist + [''] * (max_len - len(sublist)) for sublist in input_list]
+        normalized_list = [sublist + [""] * (max_len - len(sublist)) for sublist in input_list]
 
         df = pd.DataFrame(normalized_list)
 
         # 设置列名
-        columns = ['element_type'] + [f'parameter_type_{i}' for i in range(1, df.shape[1])]
+        columns = ["element_type"] + [f"parameter_type_{i}" for i in range(1, df.shape[1])]
         df.columns = columns
 
         return df
@@ -240,15 +242,16 @@ class IndustryModel:
         input_list = self._get_all_parameter_name_list()
         max_len = max(len(sublist) for sublist in input_list)
 
-        normalized_list = [sublist + [''] * (max_len - len(sublist)) for sublist in input_list]
+        normalized_list = [sublist + [""] * (max_len - len(sublist)) for sublist in input_list]
 
         df = pd.DataFrame(normalized_list)
 
         # 设置列名
-        columns = ['element_type'] + [f'parameter_index_{i}' for i in range(1, df.shape[1])]
+        columns = ["element_type"] + [f"parameter_index_{i}" for i in range(1, df.shape[1])]
         df.columns = columns
 
         return df
+
     # endregion 参数层
 
 
