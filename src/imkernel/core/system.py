@@ -158,13 +158,15 @@ class IndustryModel:
     """
 
     def __init__(self, model_type: ModelType):
-        match (model_type):
-            case ModelType.Element:
-                self.tree = ElementTree()
-            case ModelType.Method:
-                self.tree = MethodTree()
-            case ModelType.Procedure:
-                self.tree = ProcedureTree()
+        if model_type == ModelType.Element:
+            self.tree = ElementTree()
+        elif model_type == ModelType.Method:
+            self.tree = MethodTree()
+        elif model_type == ModelType.Procedure:
+            self.tree = ProcedureTree()
+        else:
+            raise ValueError("类型错误")
+
         self.model_type = model_type
 
     def __str__(self):
@@ -174,13 +176,14 @@ class IndustryModel:
         """
         创建对象节点
         """
-        match (self.model_type):
-            case ModelType.Element:
-                self.tree.add_node(ElementNode(model_type=self.model_type, id=id, description=description, is_tag=is_tag), parent_id)
-            case ModelType.Method:
-                self.tree.add_node(MethodNode(model_type=self.model_type, id=id, description=description, is_tag=is_tag), parent_id)
-            case ModelType.Procedure:
-                self.tree.add_node(ProcedureNode(model_type=self.model_type, id=id, description=description, is_tag=is_tag), parent_id)
+        if self.model_type == ModelType.Element:
+            self.tree.add_node(ElementNode(model_type=self.model_type, id=id, description=description, is_tag=is_tag), parent_id)
+        elif self.model_type == ModelType.Method:
+            self.tree.add_node(MethodNode(model_type=self.model_type, id=id, description=description, is_tag=is_tag), parent_id)
+        elif self.model_type == ModelType.Procedure:
+            self.tree.add_node(ProcedureNode(model_type=self.model_type, id=id, description=description, is_tag=is_tag), parent_id)
+        else:
+            raise ValueError("类型错误")
 
     def print_tree(self):
         """
