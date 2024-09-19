@@ -47,6 +47,12 @@ class ElementNode(NodeBase):
         # 如果找不到匹配的 group_name，返回 None
         return None
 
+    def get_data_list(self):
+        rlist = []
+        for x in self.parameter_list:
+            rlist.append(x.get('parameter_data'))
+        return rlist
+
 
 class MethodNode(NodeBase):
     """
@@ -276,6 +282,7 @@ class IndustryModel:
             # 检查 index 是否在 node.parameter_list 范围内
             if index < len(node.parameter_list):
                 node.parameter_list[index]["parameters"] = group_name
+                node.parameter_list[index]["parameter_data"] = {}
             else:
                 # 如果超出范围，则跳过
                 print(f"Index {index} exceeds the length of parameter_list. Skipping.")
@@ -376,7 +383,6 @@ class IndustryModel:
 
     # endregion 数据层
     data = add_model_data
-    name = get_group_name_df
     parameter = set_parameter_by_id
     parameter_group = set_parameter_group_by_id
 
@@ -385,24 +391,14 @@ class Element(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Element)
 
-    def name(self):
+    def get_group_name_df(self):
         """
         获取name的dataframe
         :return:
         """
         return pd.DataFrame(self._get_id_list(), columns=["element type"])
 
-    def get_all_data_df(self) -> pd.DataFrame:
-        """
-        获取所有数据并返回DataFrame，修改索引格式为element
-        """
-        # 调用父类的方法获取DataFrame
-        df = super().get_all_data_df()
-
-        # 修改索引
-        df.index = [f'element[{i}]' for i in range(len(df))]
-        return df
-
+    # region 数据层
     def add_parameter_data(self, data_index, element_id, parameter_group_name, data_list):
         """
         增加数据
@@ -429,6 +425,63 @@ class Element(IndustryModel):
 
         # 根据 data_index 将 data_list 存储到字典中
         pg['parameter_data'][str(data_index)] = data_list
+
+    # endregion 数据层
+    name = get_group_name_df
+
+    def get_all_data_df(self) -> pd.DataFrame:
+        """
+        获取所有数据并返回DataFrame，修改索引格式为element
+        """
+        # 调用父类的方法获取DataFrame
+        df = super().get_all_data_df()
+
+        # 修改索引
+        df.index = [f'element[{i}]' for i in range(len(df))]
+        return df
+
+    def get_all_data_parameter_df(self) -> pd.DataFrame:
+        """
+        获取所有数据并返回DataFrame，修改索引格式为element
+        """
+
+        def calc_row(dataa_list):
+            max_length = 0
+            for sublist in dataa_list:
+                for dic in sublist:
+                    if isinstance(dic, dict):
+                        max_length = max(max_length, len(dic))
+                    else:
+                        print("Error: Element is not a dictionary:", dic)
+            return max_length
+
+        nodes_id_list = self.tree.get_no_tag_nodes_id_list()
+
+        dataa_list = []
+        for node in self.tree.get_no_tag_nodes():
+            para_list = []
+            for para in node.parameter_list:
+                para_list.append(para.get('parameter_data'))
+            dataa_list.append(para_list)
+
+        max_le = calc_row(dataa_list)
+        new_dict = {}
+        for x in range(0, max_le):
+            new_dict[x] = []
+        for column in dataa_list:
+            for index in new_dict:
+                # Check if the key exists and append the value or None
+                #     new_dict[index].append(add_list)
+                l = []
+                for dic in column:
+                    l.append(dic.get(str(index), None))
+                new_dict[index].append(l)
+
+        # 转置字典以创建 DataFrame
+        df = pd.DataFrame.from_dict(new_dict, orient='index')
+        df.columns = nodes_id_list
+        df.index = [f'element [{i}]' for i in df.index]  # 设置索引
+        return df
 
 
 class Method(IndustryModel):
@@ -457,7 +510,7 @@ class Method(IndustryModel):
         else:
             raise ValueError("数据数量不匹配")
 
-    def name(self):
+    def get_group_name_df(self):
         """
         获取name的dataframe
         :return:
@@ -736,6 +789,7 @@ class Method(IndustryModel):
     output_parameter_group = set_output_parameter_group_by_id
     input_parameter = set_input_parameter_by_id
     output_parameter = set_output_parameter_by_id
+    name = get_group_name_df
 
 
 class Procedure(IndustryModel):
@@ -753,7 +807,7 @@ class Procedure(IndustryModel):
         df.index = [f'procedure[{i}]' for i in range(len(df))]
         return df
 
-    def name(self):
+    def get_group_name_df(self):
         """
         获取name的dataframe
         :return:
@@ -774,6 +828,8 @@ class Procedure(IndustryModel):
             relation_list.append([node.id, node.method_name, node.element_name])
         df = pd.DataFrame(relation_list, columns=["procedure name", "method name", "element name"])
         return df
+
+    name = get_group_name_df
 
 
 class System:
