@@ -79,6 +79,10 @@ class ProcedureNode(NodeBase):
         super().__init__(identification=id, desc=description)
         self.model_type: ModelType = model_type  # 模型类型
         self.is_tag: bool = is_tag  # 是否为标签
+        self.method_name: str = ""
+        self.element_name: str = ""
+        # self.relative_method: MethodNode = None
+        # self.relative_element: ElementNode = None
         # 列表中的每个元素是一个字典，字典的 key 表示参数组名称，value 是参数组包含的具体参数
         self.parameter_list: List[Dict[str, List[str]]] = []
 
@@ -330,10 +334,24 @@ class Element(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Element)
 
+    def name(self):
+        """
+        获取name的dataframe
+        :return:
+        """
+        return pd.DataFrame(self._get_id_list(), columns=["element type"])
+
 
 class Method(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Method)
+
+    def name(self):
+        """
+        获取name的dataframe
+        :return:
+        """
+        return pd.DataFrame(self._get_id_list(), columns=["method type"])
 
     def set_program(self, id: str, program: list[str]):
         node: MethodNode = self.tree.find_node_by_id(id)
@@ -619,6 +637,28 @@ class Method(IndustryModel):
 class Procedure(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Procedure)
+
+    def name(self):
+        """
+        获取name的dataframe
+        :return:
+        """
+        return pd.DataFrame(self._get_id_list(), columns=["procedure name"])
+
+    def relate(self, procedure_name: str, method_name: Optional[str], element_name: Optional[str]):
+        procedure_node: ProcedureNode = self.get_by_id(procedure_name)
+        if procedure_node is None:
+            raise Exception("procedure_name not found")
+        else:
+            procedure_node.method_name = method_name
+            procedure_node.element_name = element_name
+
+    def show_relation(self):
+        relation_list: list[list] = []
+        for node in self.tree.get_no_tag_nodes():
+            relation_list.append([node.id, node.method_name, node.element_name])
+        df = pd.DataFrame(relation_list, columns=["procedure name", "method name", "element name"])
+        return df
 
 
 class System:
