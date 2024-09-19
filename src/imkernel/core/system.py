@@ -38,6 +38,15 @@ class ElementNode(NodeBase):
         # 列表中的每个元素是一个字典，字典的 key 表示参数组名称，value 是参数组包含的具体参数
         self.parameter_list: List[Dict[str, List[str]]] = []
 
+    def find_parameters_by_group(self, parameter_group_name):
+        # 遍历 parameter_list
+        for group in self.parameter_list:
+            # 检查 group_name 是否等于指定的 parameter_group_name
+            if group['group_name'] == parameter_group_name:
+                return group
+        # 如果找不到匹配的 group_name，返回 None
+        return None
+
 
 class MethodNode(NodeBase):
     """
@@ -116,6 +125,13 @@ class IndustryTree(TreeBase):
         """
         return [node for node in self.nodes.values() if not node.is_tag]
 
+    def get_no_tag_nodes_id_list(self) -> List[str]:
+        """
+        获取所有未被标记为标签的节点ID列表
+        :return: 未被标记为标签的节点列表
+        """
+        return [node.id for node in self.nodes.values() if not node.is_tag]
+
     def find_node_by_description(self, description: str) -> List[Union[ElementNode, MethodNode, ProcedureNode]]:
         """
         根据描述查找节点
@@ -164,6 +180,7 @@ class IndustryModel:
             raise ValueError("类型错误")
 
         self.model_type = model_type
+        self.model_data = []
 
     def __str__(self):
         return f"{self.tree},{self.model_type}"
@@ -193,9 +210,9 @@ class IndustryModel:
         """
         print(self.tree.print_desc())
 
-    def name(self):
+    def get_group_name_df(self):
         """
-        获取name的dataframe
+        获取group_name的dataframe
         :return:
         """
         return pd.DataFrame(self._get_id_list(), columns=["element_name"])
@@ -243,9 +260,6 @@ class IndustryModel:
         node = self.tree.find_node_by_id(id)
         self.set_parameter_group(node, group_name_list)
 
-    # 给 set_parameter_group_by_id 取别名
-    parameter_group = set_parameter_group_by_id
-
     @staticmethod
     def set_parameter(node: Union[ElementNode, MethodNode, ProcedureNode], parameter_name_list_list: list[list[str]]):
         """
@@ -270,9 +284,6 @@ class IndustryModel:
         """
         node = self.tree.find_node_by_id(id)
         self.set_parameter(node, parameter_name_list_list)
-
-    # 给 set_parameter_group_by_id 取别名
-    parameter = set_parameter_by_id
 
     def _get_all_parameter_group_name_list(self) -> list[str]:
         """
@@ -327,16 +338,113 @@ class IndustryModel:
         return df
 
     # endregion 参数层
+    # region 数据层
+    def add_model_data(self, data_list):
+        """
+        增加数据
+        :param data_list:数据列表
+        """
+        nodes = self.tree.get_no_tag_nodes()
+        if len(nodes) == len(data_list):
+            self.model_data.append(data_list)
+        else:
+            raise ValueError("数据数量不匹配")
+
+    def add_parameter_data(self):
+        """
+        增加参数数据
+        """
+        pass
+
+    def get_all_data_df(self) -> pd.DataFrame:
+        """
+        获取所有数据
+        :param data_list:数据列表
+        """
+        nodes_id_list = self.tree.get_no_tag_nodes_id_list()
+        data = self.model_data
+
+        # 创建 DataFrame
+        df = pd.DataFrame(data, columns=nodes_id_list)
+        # 设置索引
+        df.index = [f'model[{i}]' for i in range(len(df))]
+        return df
+
+    # endregion 数据层
+    data = add_model_data
+    name = get_group_name_df
+    parameter = set_parameter_by_id
+    parameter_group = set_parameter_group_by_id
 
 
 class Element(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Element)
 
+    def get_all_data_df(self) -> pd.DataFrame:
+        """
+        获取所有数据并返回DataFrame，修改索引格式为element
+        """
+        # 调用父类的方法获取DataFrame
+        df = super().get_all_data_df()
+
+        # 修改索引
+        df.index = [f'element[{i}]' for i in range(len(df))]
+        return df
+
+    def add_parameter_data(self, data_index, element_id, parameter_group_name, data_list):
+        """
+        增加数据
+        :param data_index:data索引
+        :param element_id:单元唯一标识符
+        :param parameter_group_name:参数组名称
+         :param data_list: 需要增加的参数数据列表
+        """
+        if data_index + 1 <= len(self.model_data):
+            data = self.model_data[data_index]
+            # 在这里添加后续的处理逻辑
+        else:
+            raise KeyError(f"第{data_index}条数据不存在")
+        element = self.tree.find_node_by_id(element_id)
+        if not element:
+            raise KeyError(f"未找到{element_id}")
+        pg = element.find_parameters_by_group(parameter_group_name)
+        if pg is None:
+            raise KeyError(f"{element.id}下没有{parameter_group_name}")
+
+        # 如果 pg['parameter_data'] 还不是字典，先初始化为空字典
+        if 'parameter_data' not in pg:
+            pg['parameter_data'] = {}
+
+        # 根据 data_index 将 data_list 存储到字典中
+        pg['parameter_data'][str(data_index)] = data_list
+
 
 class Method(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Method)
+
+    def get_all_data_df(self) -> pd.DataFrame:
+        """
+        获取所有数据并返回DataFrame，修改索引格式为element
+        """
+        # 调用父类的方法获取DataFrame
+        df = super().get_all_data_df()
+
+        # 修改索引
+        df.index = [f'method[{i}]' for i in range(len(df))]
+        return df
+
+    def add_input_data(self, data_list):
+        """
+        增加数据
+        :param data_list:数据列表
+        """
+        nodes = self.tree.get_no_tag_nodes()
+        if len(nodes) == len(data_list):
+            self.model_data.append(data_list)
+        else:
+            raise ValueError("数据数量不匹配")
 
     def set_program(self, id: str, program: list[str]):
         node: MethodNode = self.tree.find_node_by_id(id)
@@ -385,9 +493,6 @@ class Method(IndustryModel):
         node = self.tree.find_node_by_id(id)
         self.set_input_parameter_group(node, group_name_list)
 
-    # 给 set_parameter_group_by_id 取别名
-    input_parameter_group = set_input_parameter_group_by_id
-
     def set_output_parameter_group_by_id(self, id: str, group_name_list: list[str]):
         """
         根据Id设置参数组
@@ -396,9 +501,6 @@ class Method(IndustryModel):
         """
         node = self.tree.find_node_by_id(id)
         self.set_output_parameter_group(node, group_name_list)
-
-    # 给 set_parameter_group_by_id 取别名
-    output_parameter_group = set_output_parameter_group_by_id
 
     @staticmethod
     def set_input_parameter(node: MethodNode, parameter_name_list_list: list[list[str]]):
@@ -414,7 +516,7 @@ class Method(IndustryModel):
                 node.input_parameter_list[index]["parameters"] = group_name
             else:
                 # 如果超出范围，则跳过
-                print(f"Index {index} exceeds the length of parameter_list. Skipping.")
+                print(f" {index} 超过索引")
 
     @staticmethod
     def set_output_parameter(node: MethodNode, parameter_name_list_list: list[list[str]]):
@@ -430,7 +532,7 @@ class Method(IndustryModel):
                 node.output_parameter_list[index]["parameters"] = group_name
             else:
                 # 如果超出范围，则跳过
-                print(f"Index {index} exceeds the length of parameter_list. Skipping.")
+                print(f"索引 {index} 超出范围")
 
     def set_input_parameter_by_id(self, id: str, parameter_name_list_list: list[list[str]]):
         """
@@ -441,9 +543,6 @@ class Method(IndustryModel):
         node = self.tree.find_node_by_id(id)
         self.set_input_parameter(node, parameter_name_list_list)
 
-    # 给 set_parameter_group_by_id 取别名
-    input_parameter = set_input_parameter_by_id
-
     def set_output_parameter_by_id(self, id: str, parameter_name_list_list: list[list[str]]):
         """
         根据节点Id设置参数
@@ -452,9 +551,6 @@ class Method(IndustryModel):
         """
         node = self.tree.find_node_by_id(id)
         self.set_output_parameter(node, parameter_name_list_list)
-
-    # 给 set_parameter_group_by_id 取别名
-    output_parameter = set_output_parameter_by_id
 
     def _get_all_input_parameter_group_name_list(self) -> list[str]:
         """
@@ -618,10 +714,26 @@ class Method(IndustryModel):
         df.columns = columns
         return df
 
+    input_parameter_group = set_input_parameter_group_by_id
+    output_parameter_group = set_output_parameter_group_by_id
+    input_parameter = set_input_parameter_by_id
+    output_parameter = set_output_parameter_by_id
+
 
 class Procedure(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Procedure)
+
+    def get_all_data_df(self) -> pd.DataFrame:
+        """
+        获取所有数据并返回DataFrame，修改索引格式为element
+        """
+        # 调用父类的方法获取DataFrame
+        df = super().get_all_data_df()
+
+        # 修改索引
+        df.index = [f'procedure[{i}]' for i in range(len(df))]
+        return df
 
 
 class System:
