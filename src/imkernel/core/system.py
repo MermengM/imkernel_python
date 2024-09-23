@@ -1,10 +1,15 @@
-from typing import Optional, Union, List, Dict
-
+import os
+from typing import Optional, Union, List, Dict, Any
+from abc import ABC, abstractmethod
 import pandas as pd
+import time
 
+from . import get_algorithm_by_path
 from .tree_base import TreeBase
 from .node_base import NodeBase
 from enum import Enum
+
+from .utils import remove_empty_members
 
 
 class ModelType(Enum):
@@ -75,6 +80,31 @@ class MethodNode(NodeBase):
         # 列表中的每个元素是一个字典，字典的 key 表示参数组名称，value 是参数组包含的具体参数
         self.input_parameter_list: List[Dict[str, List[str]]] = []
         self.output_parameter_list: List[Dict[str, List[str]]] = []
+
+    def get_parameter_data_list(self) -> list:
+        """
+        获取当前节点所有参数数据列表
+        """
+        input_data_list = [p.get('parameter_data', []) for p in self.input_parameter_list]
+        return input_data_list
+
+    def set_parameter_data_list(self, parameter_data_list: List[List[Any]]) -> None:
+        """
+        设置当前节点所有参数数据列表
+
+        :param parameter_data_list: 要设置的参数数据列表，应该是一个二维列表，
+                                    其中每个子列表对应一个参数组的数据
+        """
+        output_len = len(self.output_parameter_list)
+        print(len(parameter_data_list))
+        print(len(self.input_parameter_list))
+        if len(parameter_data_list) != len(self.output_parameter_list):
+            raise ValueError("参数数据列表长度与输入参数列表长度不匹配")
+
+        for i, data in enumerate(parameter_data_list):
+            if 'parameter_data' not in self.output_parameter_list[i]:
+                self.output_parameter_list[i]['parameter_data'] = []
+            self.output_parameter_list[i]['parameter_data'] = data
 
 
 class ProcedureNode(NodeBase):
@@ -167,6 +197,8 @@ class ElementTree(IndustryTree):
 class MethodTree(IndustryTree):
     def __init__(self):
         super().__init__()
+        self.roots: Dict[str, MethodNode] = {}
+        self.nodes: Dict[str, MethodNode] = {}
 
 
 class ProcedureTree(IndustryTree):
@@ -349,22 +381,23 @@ class IndustryModel:
         return df
 
     # endregion 参数层
+
     # region 数据层
-    def add_model_data(self, data_list):
+    def add_model_data(self, data_list: List[str]):
         """
-        增加数据
+        增加模型数据
         :param data_list:数据列表
         """
-        nodes = self.tree.get_no_tag_nodes()
-        if len(nodes) == len(data_list):
-            self.model_data.append(data_list)
-        else:
-            raise ValueError("数据数量不匹配")
+        raise NotImplementedError("暂不支持")
+        pass
 
-    def add_parameter_data(self):
+    @abstractmethod
+    def add_parameter_data(self, param):
         """
         增加参数数据
+        :param param:
         """
+        raise NotImplementedError("暂未实现")
         pass
 
     def get_all_data_df(self) -> pd.DataFrame:
@@ -399,13 +432,24 @@ class Element(IndustryModel):
         return pd.DataFrame(self._get_id_list(), columns=["element type"])
 
     # region 数据层
-    def add_parameter_data(self, data_index, element_id, parameter_group_name, data_list):
+    def add_model_data(self, data_list: List[str]):
         """
-        增加数据
+        增加对象层数据
+        :param data_list:数据列表
+        """
+        nodes = self.tree.get_no_tag_nodes()
+        if len(nodes) == len(data_list):
+            self.model_data.append(data_list)
+        else:
+            raise ValueError(f"对象数量为{len(nodes)}，与输入数量不匹配")
+
+    def add_parameter_data(self, data_index: int, element_id: str, parameter_group_name: str, data_list):
+        """
+        增加参数数据
         :param data_index:data索引
         :param element_id:单元唯一标识符
         :param parameter_group_name:参数组名称
-         :param data_list: 需要增加的参数数据列表
+        :param data_list: 需要增加的参数数据列表
         """
         if data_index + 1 <= len(self.model_data):
             data = self.model_data[data_index]
@@ -488,31 +532,11 @@ class Method(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Method)
 
-    def get_all_data_df(self) -> pd.DataFrame:
-        """
-        获取所有数据并返回DataFrame，修改索引格式为element
-        """
-        # 调用父类的方法获取DataFrame
-        df = super().get_all_data_df()
-
-        # 修改索引
-        df.index = [f'method[{i}]' for i in range(len(df))]
-        return df
-
-    def add_input_data(self, data_list):
-        """
-        增加数据
-        :param data_list:数据列表
-        """
-        nodes = self.tree.get_no_tag_nodes()
-        if len(nodes) == len(data_list):
-            self.model_data.append(data_list)
-        else:
-            raise ValueError("数据数量不匹配")
+    # region 对象层
 
     def get_group_name_df(self):
         """
-        获取name的dataframe
+        获取对象层节点所有id的dataframe
         :return:
         """
         return pd.DataFrame(self._get_id_list(), columns=["method type"])
@@ -521,16 +545,27 @@ class Method(IndustryModel):
         node: MethodNode = self.tree.find_node_by_id(id)
         node.program = program
 
+    def get_program_by_id(self, id: str):
+
+        node: MethodNode = self.tree.find_node_by_id(id)
+        if node is not None:
+            return node.program
+        else:
+            raise Exception("未找到节点")
+
     def get_program(self):
         columns = ["id", "program"]
         program_list = [(node.id, node.program) for node in self.tree.get_no_tag_nodes()]
         df = pd.DataFrame(program_list, columns=columns)
         return df
 
+    # endregion 对象层
+
+    # region 参数层
     @staticmethod
     def set_input_parameter_group(node: MethodNode, group_name_list: list[str]):
         """
-        设置节点参数组，避免重复添加
+        设置方法模型输入参数组
         :param node: 节点
         :param group_name_list: 参数组名称列表
         """
@@ -544,7 +579,7 @@ class Method(IndustryModel):
     @staticmethod
     def set_output_parameter_group(node: MethodNode, group_name_list: list[str]):
         """
-        设置节点参数组，避免重复添加
+        设置方法模型输出参数组
         :param node: 节点
         :param group_name_list: 参数组名称列表
         """
@@ -557,7 +592,7 @@ class Method(IndustryModel):
 
     def set_input_parameter_group_by_id(self, id: str, group_name_list: list[str]):
         """
-        根据Id设置参数组
+        根据Id设置方法模型输入参数组
         :param id:
         :param group_name_list:
         """
@@ -566,7 +601,7 @@ class Method(IndustryModel):
 
     def set_output_parameter_group_by_id(self, id: str, group_name_list: list[str]):
         """
-        根据Id设置参数组
+        根据Id设置方法模型输出参数组
         :param id:
         :param group_name_list:
         """
@@ -576,7 +611,7 @@ class Method(IndustryModel):
     @staticmethod
     def set_input_parameter(node: MethodNode, parameter_name_list_list: list[list[str]]):
         """
-        设置节点参数
+        设置节点输入参数
         :param node:节点
         :param parameter_name_list_list:
         """
@@ -592,7 +627,7 @@ class Method(IndustryModel):
     @staticmethod
     def set_output_parameter(node: MethodNode, parameter_name_list_list: list[list[str]]):
         """
-        设置节点参数
+        设置节点输出参数
         :param node:节点
         :param parameter_name_list_list:
         """
@@ -607,7 +642,7 @@ class Method(IndustryModel):
 
     def set_input_parameter_by_id(self, id: str, parameter_name_list_list: list[list[str]]):
         """
-        根据节点Id设置参数
+        根据节点Id设置输入参数
         :param id:
         :param parameter_name_list_list:
         """
@@ -616,7 +651,7 @@ class Method(IndustryModel):
 
     def set_output_parameter_by_id(self, id: str, parameter_name_list_list: list[list[str]]):
         """
-        根据节点Id设置参数
+        根据节点Id设置输出参数
         :param id:
         :param parameter_name_list_list:
         """
@@ -625,7 +660,7 @@ class Method(IndustryModel):
 
     def _get_all_input_parameter_group_name_list(self) -> list[str]:
         """
-        组合单元对象+参数组1、2、3、4...
+        获取所有输入参数组名称
         :return:
         """
         output_list = []
@@ -637,7 +672,7 @@ class Method(IndustryModel):
 
     def _get_all_output_parameter_group_name_list(self) -> list[str]:
         """
-        组合单元对象+参数组1、2、3、4...
+        获取所有输出参数组名称
         :return:
         """
         output_list = []
@@ -649,7 +684,7 @@ class Method(IndustryModel):
 
     def _get_all_input_parameter_name_list(self) -> list[str]:
         """
-        组合单元对象+参数1、2、3、4...
+        获取所有输入参数名称
         :return:
         """
         output_list = []
@@ -661,7 +696,7 @@ class Method(IndustryModel):
 
     def _get_all_output_parameter_name_list(self) -> list[str]:
         """
-        组合单元对象+参数1、2、3、4...
+        获取所有输出参数名称
         :return:
         """
         output_list = []
@@ -785,11 +820,187 @@ class Method(IndustryModel):
         df.columns = columns
         return df
 
+    # endregion 参数层
+    # region 数据层
+    def get_all_data_df(self) -> pd.DataFrame:
+        """
+        获取所有数据并返回DataFrame，修改索引格式为element
+        """
+        # 调用父类的方法获取DataFrame
+        raise NotImplementedError("暂不支持该方法")
+
+    @staticmethod
+    def _add_parameter_data(node: MethodNode, type: str, id: str, data_list):
+        """
+        增加参数数据
+        :param node:方法节点
+        :param type:输入输出标识符
+        :param id:唯一标识符
+        :param data_list: 需要增加的参数数据列表
+        """
+
+        if not node:
+            raise KeyError(f"未找到{id}")
+        parameter_list = []
+        if type == "input":
+            parameter_list = node.input_parameter_list
+        elif type == "output":
+            parameter_list = node.output_parameter_list
+        else:
+            raise TypeError("类型不正确，请指定input/output")
+        for index, par_dict in enumerate(parameter_list):
+            par_dict['parameter_data'] = data_list[index] if index < len(data_list) else None
+
+    def set_input_parameter_data(self, id: str, data_list):
+        """
+        设置参数输入数据
+        :param id:唯一标识符
+        :param data_list: 需要设置的参数数据列表
+        """
+        node = self.tree.find_node_by_id(id)
+        self._add_parameter_data(node=node, id=id, type="input", data_list=data_list)
+
+    def set_output_parameter_data(self, id: str, data_list):
+        """
+        设置参数输出数据
+        :param id:唯一标识符
+        :param data_list: 需要设置的参数数据列表
+        """
+        node = self.tree.find_node_by_id(id)
+        self._add_parameter_data(node=node, id=id, type="output", data_list=data_list)
+
+    def get_all_parameter_data_list(self, max_input_len: int, max_output_len: int):
+        """
+        获取所有参数数据列表
+        :param max_output_len:
+        :param max_input_len:
+        """
+        result_list = []
+        for node_id, node in self.tree.nodes.items():
+            node: MethodNode
+            if not node.is_tag:
+                add_list = [node_id]
+                input_list = [p.get('parameter_data', []) for p in node.input_parameter_list]
+                output_list = [p.get('parameter_data', []) for p in node.output_parameter_list]
+                # 调整 input_list 长度为 max_input_len
+                if len(input_list) > max_input_len:
+                    input_list = input_list[:max_input_len]
+                elif len(input_list) < max_input_len:
+                    input_list.extend([[] for _ in range(max_input_len - len(input_list))])
+
+                # 调整 output_list 长度为 max_output_len
+                if len(output_list) > max_output_len:
+                    output_list = output_list[:max_output_len]
+                elif len(output_list) < max_output_len:
+                    output_list.extend([[] for _ in range(max_output_len - len(output_list))])
+
+                add_list.extend(input_list)
+                add_list.extend(output_list)
+                result_list.append(add_list)
+        return result_list
+
+    def show_parameter_data(self, id: str = None):
+        """
+        展示方法parameter data
+        :param id:
+        :return:
+        """
+        max_input_len = 2
+        max_output_len = 2
+        if id is None or id.strip() == "":
+            # 获取所有
+            method_name_list = self.tree.get_no_tag_nodes_id_list()
+            output_list = self.get_all_parameter_data_list(max_input_len, max_output_len)
+            df = pd.DataFrame(output_list)
+            # 设置列名
+            columns = ["method_name"] + [f"input_{i}" for i in range(0, max_input_len)] + [f"output_{i}" for i in range(0, max_output_len)]
+            df.columns = columns
+        else:
+            node = self.tree.find_node_by_id(id)
+            if not node or node.is_tag:
+                raise Exception(f"未找到{id}")
+            output_list = []
+            all_output_list = self.get_all_parameter_data_list(max_input_len, max_output_len)
+            for row in all_output_list:
+                if row and str(row[0]) == str(id):
+                    output_list = row
+            df = pd.DataFrame([output_list])
+            # 设置列名
+            columns = ["method_name"] + [f"input_{i}" for i in range(0, max_input_len)] + [f"output_{i}" for i in range(0, max_output_len)]
+            df.columns = columns
+        return df
+
+    # endregion 数据层
+    # region 分析方法
+
+    def run(self, id: str):
+        """
+        使用方法模型数据运行方法
+        :param id: 方法名
+        """
+        node: MethodNode = self.tree.find_node_by_id(id)
+        if node.is_tag or node is None:
+            raise Exception("节点不存在")
+        program = self.get_program_by_id(node.id)
+
+        if program is None:
+            raise Exception("程序未指定")
+        # 分割py路径，函数名称
+        method_body, method_name = os.path.split(program[0])
+        if not method_body or not method_name:
+            raise Exception("方法体/方法获取失败")
+        input_par_list = [p.get('parameters', []) for p in node.input_parameter_list]
+        # input_data_list = [p.get('parameter_data', []) for p in node.input_parameter_list]
+        input_data_list = node.get_parameter_data_list()
+        print(f"方法体：{method_body}，方法：{method_name}")
+        print(f"参数：{input_par_list}")
+        print(f"参数值：{input_data_list}")
+
+        # print(f"尝试导入方法体")
+        # 获取算法
+        function = get_algorithm_by_path(method_body, method_name)
+        if not function:
+            raise Exception(f"未能导入{method_name}")
+        # print(f"成功导入算法: {method_name}")
+
+        format_input = remove_empty_members(input_data_list)
+
+        # 开始计时
+        start_time = time.time()
+        func_result = function(*format_input)
+        format_result = process_function_result(func_result)
+
+        # 结束计时
+        end_time = time.time()
+
+        # 计算耗时
+        execution_time = end_time - start_time
+
+        node.set_parameter_data_list(format_result)
+
+        print(f"算法运行完毕，耗时：{execution_time:.4f}秒")
+        # logger.info(result)
+        return func_result
+
+    # endregion
+    name = get_group_name_df
     input_parameter_group = set_input_parameter_group_by_id
     output_parameter_group = set_output_parameter_group_by_id
     input_parameter = set_input_parameter_by_id
     output_parameter = set_output_parameter_by_id
-    name = get_group_name_df
+    input_parameter_data = set_input_parameter_data
+    output_parameter_data = set_output_parameter_data
+
+
+def process_function_result(func_result):
+    if isinstance(func_result, tuple):
+        # if len(func_result) == 1:
+        #     # 当返回的 tuple 长度为 1 时的处理
+        #     return func_result[0]  # 返回 tuple 中的单个元素
+        return func_result
+    else:
+        # 当返回值不是 tuple 时的处理
+        return [func_result]
 
 
 class Procedure(IndustryModel):

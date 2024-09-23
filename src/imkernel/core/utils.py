@@ -3,7 +3,6 @@ import sys
 import json
 import os
 import pandas as pd
-from treelib import Tree
 from nbformat.v4 import new_notebook, new_code_cell
 
 
@@ -88,41 +87,6 @@ def merge_tree(tree, param_mapping, parameter_dict):
             add_parameters(node_id, param_list)
         else:
             print(f"节点 '{node_id}' 未找到")
-
-
-def save_model(notebook_path):
-    # 打开并读取原始notebook文件
-    with open(notebook_path, 'r', encoding='utf-8') as f:
-        nb = nbformat.read(f, as_version=4)
-
-    # 合并所有代码单元格的内容
-    merged_content = ""
-    for cell in nb['cells']:
-        if cell['cell_type'] == 'code':
-            merged_content += cell['source']
-            merged_content += "\n\n"
-
-    # 创建一个新的Jupyter Notebook对象
-    new_nb = new_notebook()
-
-    # 创建一个新的代码单元格，并将merged_content写入该单元格
-    first_cell = new_code_cell(source=merged_content)
-
-    # 将该单元格添加到新notebook中
-    new_nb['cells'].append(first_cell)
-
-    # 生成新的notebook文件路径，添加 "_分析" 后缀
-    dir_name, base_name = os.path.split(notebook_path)
-    name, ext = os.path.splitext(base_name)
-    new_notebook_path = os.path.join(dir_name, f"{name}_分析{ext}")
-
-    # 将新的notebook保存到指定路径
-    with open(new_notebook_path, 'w', encoding='utf-8') as f:
-        nbformat.write(new_nb, f)
-    # 创建一个FileLink对象并显示下载链接
-    display(FileLink(new_notebook_path, result_html_prefix="导出到: "))
-    # 返回一个FileLink对象，Jupyter Notebook中会显示下载链接
-    return new_notebook_path
 
 
 def merge_method_tree(tree, param_mapping, parameter_dict):

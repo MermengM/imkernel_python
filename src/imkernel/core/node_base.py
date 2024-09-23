@@ -37,3 +37,9 @@ class NodeBase:
 
     def __str__(self) -> str:
         return f"NodeBase(id={self.id}, desc={self.desc},data={self.data})"
+
+    def get_parameter_data_list(self) -> list:
+        """
+        获取当前节点所有参数数据列表
+        """
+        raise NotImplementedError('该方法未实现')
