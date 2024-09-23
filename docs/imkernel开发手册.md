@@ -214,6 +214,12 @@ system.method.run(id:str):
 # 过程模型
 
 
+## 对象层
+
+#### 创建树结构
+
+system.element.create(id,desc,parent_id,flag)
+system.element.create('design_system', '1. 设计系统','blade_optimize_system')
 
 
 2. Matplotlib
