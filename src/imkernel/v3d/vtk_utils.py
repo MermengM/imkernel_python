@@ -1,15 +1,41 @@
 import re
 import numpy as np
 import pyvista as pv
+from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
+from OCC.Core.gp import gp_Pnt
 from vtk import vtkTransform
 import datetime
 import asyncio
 from IPython.display import display, HTML, clear_output
-pv.global_theme.trame.server_proxy_enabled = True
-pv.set_jupyter_backend("client")
+
+
+def showObjFromFile(file_path: str, color: str = None):
+    """
+    从Obj显示文件
+    :param file_path:
+    :param color:
+    """
+
+    # Set up the plotter
+
+    # Read the OBJ file
+    mesh = pv.read(file_path)
+
+    # Create a plotter and add the mesh
+    plotter = pv.Plotter()
+    plotter.add_mesh(mesh, color=color)
+
+    # Show the plot
+    plotter.show()
 
 
 def showPointsFromFile(file_path: str, color: str = None, handle_type: str = "txt"):
+    """
+    从文件显示点
+    :param file_path:
+    :param color:
+    :param handle_type:
+    """
     if handle_type == "txt":
         points_data = handle_txt(file_path)
     else:
@@ -18,6 +44,7 @@ def showPointsFromFile(file_path: str, color: str = None, handle_type: str = "tx
     plotter = pv.Plotter()
     plotter.add_points(points=points_data, color=color)
     plotter.show()
+
 
 def showLineFromFile(file_path: str, color: str = None, line_width: float = 1.0, handle_type: str = "cpt"):
     if handle_type == "txt":
@@ -42,6 +69,7 @@ def showOneLineFromList(line_data_list, color: str = None, line_width: float = 1
     plotter.add_mesh(mesh, line_width=line_width, color=color)
     plotter.show()
 
+
 def showMultiLineFromList(lines_data_list, color: str = None, line_width: float = 1.0):
     plotter = pv.Plotter()
     for oneLine in lines_data_list:
@@ -49,7 +77,8 @@ def showMultiLineFromList(lines_data_list, color: str = None, line_width: float 
         mesh = pv.MultipleLines(points=line_data)
         plotter.add_mesh(mesh, line_width=line_width, color=color)
     plotter.show()
-    
+
+
 def showMultiLineFromListDict(lines_data_list, color: str = None, line_width: float = 1.0):
     plotter = pv.Plotter()
     for oneLine in lines_data_list:
@@ -69,7 +98,8 @@ def showModel(file_path: str, color: str = None):
     plotter.add_mesh(mesh, color=color)
     plotter.show()
 
-def showAnimation(NC_file_path: str, file_paths: str = None, blade_file_path:str=None,output_path: str = None, pop_window=True):
+
+def showAnimation(NC_file_path: str, file_paths: str = None, blade_file_path: str = None, output_path: str = None, pop_window=True):
     # 初始化 Plotter
     if pop_window:
         plotter = pv.Plotter()
@@ -186,8 +216,7 @@ def showAnimation(NC_file_path: str, file_paths: str = None, blade_file_path:str
                 # 捕获当前帧
                 image = plotter.screenshot()
                 frames.append(image)
-                
-            
+
     # 在动画结束后，窗口保持打开状态
     # plotter.show(auto_close=False)
 
@@ -200,8 +229,8 @@ def showAnimation(NC_file_path: str, file_paths: str = None, blade_file_path:str
     # # 提示完成全部操作
     # print(f"动画保存到d{output_file}")
 
-    
-async def showAnimationAsync(NC_file_path: str, file_paths: str = None, blade_file_path:str=None,output_path: str = None):
+
+async def showAnimationAsync(NC_file_path: str, file_paths: str = None, blade_file_path: str = None, output_path: str = None):
     # 初始化 Plotter
     plotter = pv.Plotter()
 
@@ -209,12 +238,11 @@ async def showAnimationAsync(NC_file_path: str, file_paths: str = None, blade_fi
     if not file_paths:
         print("请提供机床模型文件")
         return
-      
+
     colors = ["red", "orange", "yellow", "green", "blue", "purple"]
     # 创造actor list
     actors = []
-    
-   
+
     # 添加机床模型
     for i, file_path in enumerate(file_paths):
         reader = pv.get_reader(file_path)
@@ -222,7 +250,7 @@ async def showAnimationAsync(NC_file_path: str, file_paths: str = None, blade_fi
         actor = plotter.add_mesh(mesh, color=colors[i], opacity=0.7)  # 添加机床模型到plotter上，0.7表示模型的透明度
         actor.RotateX(90)
         actors.append(actor)
-   
+
     # 单独添加叶片
     if not blade_file_path:
         print(f"叶片文件{blade_file_path}不存在")
@@ -233,24 +261,21 @@ async def showAnimationAsync(NC_file_path: str, file_paths: str = None, blade_fi
     blade = reader.read()
     actor_blade = plotter.add_mesh(blade)
     actor_blade.RotateX(180)  # 调整叶片的位置
-    
+
     # 添加圆柱体模拟刀片
     cylinder = pv.Cylinder(center=(-224, 95, -290), direction=(0, 0, 1), radius=1.0, height=20.0)  # 数值为测试数值，是手动调节的位置等信息
     actor_addcylinder = plotter.add_mesh(cylinder)
-    
-
-
 
     # 显示坐标轴
     plotter.add_axes(interactive=True)  # 使用互动的全局坐标轴
     # 设置视角
     plotter.view_vector((0, 1, 0), (0, 0, -1))
-    
+
     plotter.show(jupyter_backend='client', auto_close=False)
     plotter.iren.initialize()
     plotter.iren.start()
     plotter.render()
-    
+
     print(f"开始计算动画{datetime.datetime.now()}")
     # 设置初始的位置坐标
     # 定义NC代码中，要匹配的正则表达式模式，筛选出符合条件的行
@@ -294,15 +319,15 @@ async def showAnimationAsync(NC_file_path: str, file_paths: str = None, blade_fi
                     CTrans.RotateZ(values[4])
                     actors[5].SetUserTransform(CTrans)
                     actor_blade.SetUserTransform(CTrans)
-                    
+
                     plotter.update()
                     await asyncio.sleep(0.1)
 
-async def showAnimationWithInfoAsync(NC_file_path: str, file_paths: str = None, blade_file_path:str=None,line_skip=10):
 
+async def showAnimationWithInfoAsync(NC_file_path: str, file_paths: str = None, blade_file_path: str = None, line_skip=10):
     # 清除所有之前的输出
     clear_output(wait=True)
-    
+
     # 关闭所有之前的 plotter
     pv.close_all()
     # 初始化 Plotter
@@ -312,12 +337,11 @@ async def showAnimationWithInfoAsync(NC_file_path: str, file_paths: str = None, 
     if not file_paths:
         print("请提供机床模型文件")
         return
-      
+
     colors = ["red", "orange", "yellow", "green", "blue", "purple"]
     # 创造actor list
     actors = []
-    
-   
+
     # 添加机床模型
     for i, file_path in enumerate(file_paths):
         reader = pv.get_reader(file_path)
@@ -325,7 +349,7 @@ async def showAnimationWithInfoAsync(NC_file_path: str, file_paths: str = None, 
         actor = plotter.add_mesh(mesh, color=colors[i], opacity=0.7)  # 添加机床模型到plotter上，0.7表示模型的透明度
         actor.RotateX(90)
         actors.append(actor)
-   
+
     # 单独添加叶片
     if not blade_file_path:
         print(f"叶片文件{blade_file_path}不存在")
@@ -336,30 +360,26 @@ async def showAnimationWithInfoAsync(NC_file_path: str, file_paths: str = None, 
     blade = reader.read()
     actor_blade = plotter.add_mesh(blade)
     actor_blade.RotateX(180)  # 调整叶片的位置
-    
+
     # 添加圆柱体模拟刀片
     cylinder = pv.Cylinder(center=(-224, 95, -290), direction=(0, 0, 1), radius=1.0, height=20.0)  # 数值为测试数值，是手动调节的位置等信息
     actor_addcylinder = plotter.add_mesh(cylinder)
-    
-
-
 
     # 显示坐标轴
     plotter.add_axes(interactive=True)  # 使用互动的全局坐标轴
     # 设置视角
     plotter.view_vector((0, 1, 0), (0, 0, -1))
-    
+
     plotter.show(jupyter_backend='client', auto_close=False)
     plotter.iren.initialize()
     plotter.iren.start()
     plotter.render()
-    
 
     print(f"开始计算动画{datetime.datetime.now()}")
-    
+
     # 创建一个用于显示NC代码信息的输出区域
     output = display(HTML(""), display_id=True)
-    
+
     # 用于存储最近的5行NC代码信息
     recent_lines = []
 
@@ -403,21 +423,21 @@ async def showAnimationWithInfoAsync(NC_file_path: str, file_paths: str = None, 
                     CTrans.RotateZ(values[4])
                     actors[5].SetUserTransform(CTrans)
                     actor_blade.SetUserTransform(CTrans)
-                    
-                     # 更新最近的NC代码信息
+
+                    # 更新最近的NC代码信息
                     recent_lines.append(f"第{index}行: {line.strip()}")
                     if len(recent_lines) > 5:
                         recent_lines.pop(0)
-                    
+
                     # 更新显示的NC代码信息
                     output.update(HTML("<pre>" + "\n".join(recent_lines) + "</pre>"))
-                    
+
                     plotter.update()
                     await asyncio.sleep(0.1)
-                   
 
     # 清除输出
     clear_output()
+
 
 class showMultiModel:
     def __init__(self):
@@ -511,25 +531,30 @@ def handle_cpt(file_path):
                 # 取前三个数字
                 points.append([float(elements[0]), float(elements[1]), float(elements[2])])
     return np.array(points, dtype=np.float32)
+
+
 def showPcd(pcd_path):
-    multiModel=showMultiModel()
-    multiModel.addPointsFromFile(file_path=r"E:\imkernel_python_release\imkernel\ShowModel\target.pcd",color="yellow")
-    multiModel.addPointsFromFile(file_path=r"E:\imkernel_python_release\imkernel\ShowModel\final.pcd",color="lightgreen")
+    multiModel = showMultiModel()
+    multiModel.addPointsFromFile(file_path=r"E:\imkernel_python_release\imkernel\ShowModel\target.pcd", color="yellow")
+    multiModel.addPointsFromFile(file_path=r"E:\imkernel_python_release\imkernel\ShowModel\final.pcd", color="lightgreen")
     multiModel.show()
 
+
 def showMolded(molded_list):
-    multiModel=showMultiModel()
+    multiModel = showMultiModel()
     for x in molded_list:
-        multiModel.addPointsFromFile(file_path=x,color=None)
+        multiModel.addPointsFromFile(file_path=x, color=None)
     multiModel.show()
 
 
 import pandas as pd
 import matplotlib.pyplot as plt
+
+
 def showScatter_plot(file_path):
-    df = pd.read_csv(file_path,index_col=0)
+    df = pd.read_csv(file_path, index_col=0)
     # 获取最后两列的数据
-    mrr = df.iloc[:, -2]  
+    mrr = df.iloc[:, -2]
     failure_rate = df.iloc[:, -1]
     failure_mrr = df.iloc[:, -2:]
 
@@ -546,4 +571,7 @@ def showScatter_plot(file_path):
 
     plt.legend()
     plt.show()
-    
+
+
+if __name__ == '__main__':
+    showObjFromFile(r'C:\SHUSHE\Python\imkernel_python\src\imkernel\3DV\1.obj')

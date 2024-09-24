@@ -195,11 +195,11 @@ CIMSH.method.output_parameter("method_AI_model_train", [["wgt_file"]])
 CIMSH.method.output_parameter("method_AI_parameter_recommand", [["optimized_data"]])
 
 CIMSH.method.show_parameters()
-CIMSH.method.input_parameter_data('method_eleven_parameter', [[[0, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 0],
-                                                               [0, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 20],
-                                                               [0, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 50],
-                                                               [0, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 80],
-                                                               [0, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 100]], []])
+CIMSH.method.input_parameter_data('method_eleven_parameter', [[[50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 0],
+                                                               [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 20],
+                                                               [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 50],
+                                                               [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 80],
+                                                               [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 100]], []])
 CIMSH.method.output_parameter_data('method_eleven_parameter', [[312, 41, 124], [214, 124, 4]])
 CIMSH.method.run('method_eleven_parameter')
 CIMSH.method.show_parameters()
@@ -235,7 +235,7 @@ CIMSH.procedure.create("blade_AI_optimization", "5. 叶片AI优化", "blade_desi
 CIMSH.procedure.create("AI_optimization_model_train", "5.1 AI优化模型训练", "blade_AI_optimization")
 CIMSH.procedure.create("AI_optimization_recommand", "5.2 AI优化参数推荐", "blade_AI_optimization")
 
-CIMSH.procedure.print_tree_desc()
+CIMSH.procedure.print_tree()
 print(CIMSH.procedure.name())
 
 CIMSH.procedure.relate("molded_line_generate", "method_eleven_parameter", "curved_surface")
@@ -251,5 +251,5 @@ CIMSH.procedure.relate("AI_filter_model_train", "method_AI_filter_model_train", 
 CIMSH.procedure.relate("AI_data_filter", "method_AI_data_filter", "blade_optimize_system")
 CIMSH.procedure.relate("AI_optimization_model_train", "method_AI_optimization_model_train", "blade_optimize_system")
 CIMSH.procedure.relate("AI_optimization_recommand", "method_AI_optimization_recommand", "blade_optimize_system")
-
+a = CIMSH.procedure.show_relation()
 print(CIMSH.procedure.show_relation())
