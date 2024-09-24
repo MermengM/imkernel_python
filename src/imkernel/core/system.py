@@ -188,6 +188,26 @@ class IndustryTree(TreeBase):
         """
         return self.nodes.get(node_id)
 
+    def _format_node(self, node: NodeBase, format_type) -> str:
+        """
+        重写基类_format_node方法
+        :param node:
+        :param format_type:
+        :return:
+        """
+        node_info = ""
+        if format_type == "id":
+            node_info = node.id
+        elif format_type == "desc":
+            node_info = node.desc
+
+        # 是分组标签节点（不参与运算）
+        if node.is_tag:
+            pass
+        else:
+            node_info += f" √"
+        return node_info
+
 
 class ElementTree(IndustryTree):
     def __init__(self):
@@ -938,6 +958,17 @@ class Method(IndustryModel):
         使用方法模型数据运行方法
         :param id: 方法名
         """
+
+        def process_function_result(func_result):
+            if isinstance(func_result, tuple):
+                # if len(func_result) == 1:
+                #     # 当返回的 tuple 长度为 1 时的处理
+                #     return func_result[0]  # 返回 tuple 中的单个元素
+                return func_result
+            else:
+                # 当返回值不是 tuple 时的处理
+                return [func_result]
+
         node: MethodNode = self.tree.find_node_by_id(id)
         if node.is_tag or node is None:
             raise Exception("节点不存在")
@@ -992,17 +1023,6 @@ class Method(IndustryModel):
     output_parameter_data = set_output_parameter_data
 
 
-def process_function_result(func_result):
-    if isinstance(func_result, tuple):
-        # if len(func_result) == 1:
-        #     # 当返回的 tuple 长度为 1 时的处理
-        #     return func_result[0]  # 返回 tuple 中的单个元素
-        return func_result
-    else:
-        # 当返回值不是 tuple 时的处理
-        return [func_result]
-
-
 class Procedure(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Procedure)
@@ -1025,19 +1045,19 @@ class Procedure(IndustryModel):
         """
         return pd.DataFrame(self._get_id_list(), columns=["procedure name"])
 
-    def relate(self, procedure_name: str, method_name: Optional[str], element_name: Optional[str]):
+    def relate(self, procedure_name: str, element_name: Optional[str], method_name: Optional[str]):
         procedure_node: ProcedureNode = self.get_by_id(procedure_name)
         if procedure_node is None:
-            raise Exception("procedure_name not found")
+            raise Exception(f"流程模型{procedure_name}未找到")
         else:
-            procedure_node.method_name = method_name
             procedure_node.element_name = element_name
+            procedure_node.method_name = method_name
 
     def show_relation(self):
         relation_list: list[list] = []
         for node in self.tree.get_no_tag_nodes():
-            relation_list.append([node.id, node.method_name, node.element_name])
-        df = pd.DataFrame(relation_list, columns=["procedure name", "method name", "element name"])
+            relation_list.append([node.id, node.element_name, node.method_name])
+        df = pd.DataFrame(relation_list, columns=["procedure name", "element name", "method name"])
         return df
 
     name = get_group_name_df
