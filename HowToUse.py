@@ -1,7 +1,7 @@
 # 创建Element实例
-from imkernel import System
+from imkernel import Model
 
-CIMSH = System()
+CIMSH = Model()
 # create(id, description, parent_id, is_tag)
 CIMSH.element.create("blade_optimize_system", "0. 叶片铣削设计制造系统")
 CIMSH.element.create("design_system", "1. 设计系统", "blade_optimize_system", True)
@@ -49,7 +49,7 @@ CIMSH.element.add_parameter_data(1, 'molded_line', 'control_point', [[1, 2, 3], 
 aaa = CIMSH.element.get_all_data_parameter_df()
 print(CIMSH)
 # 创建Element实例
-CIMSH = System()
+CIMSH = Model()
 # create(id, description, parent_id, is_tag)
 CIMSH.method.create("blade_design_milling_optimization", "叶片设计铣削优化方法集", None, True)
 # 创建叶片设计方法

@@ -27,6 +27,12 @@ pip install jupyterlab vtk trame ipywidgets 'pyvista[all,trame]' trame_jupyter_e
 pip install jupyterlab-language-pack-zh-CN
 ```
 
+安装pyocc
+
+```
+conda install conda-forge::pythonocc-core
+```
+
 #### 同时也对matplotlib进行一些封装，故需要安装如下包：
 
 ```bash

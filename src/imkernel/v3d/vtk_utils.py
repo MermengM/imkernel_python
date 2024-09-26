@@ -12,7 +12,7 @@ pv.global_theme.trame.jupyter_extension_enabled = True
 pv.set_jupyter_backend("client")
 
 
-def showObjFromFile(file_path: str, color: str = None):
+def ShowObj(file_path: str, color: str = None):
     """
     从Obj显示文件
     :param file_path:
@@ -577,4 +577,4 @@ def showScatter_plot(file_path):
 
 
 if __name__ == '__main__':
-    showObjFromFile(r'C:\SHUSHE\Python\imkernel_python\src\imkernel\3DV\1.obj')
+    ShowObj(r'C:\SHUSHE\Python\imkernel_python\src\imkernel\3DV\1.obj')

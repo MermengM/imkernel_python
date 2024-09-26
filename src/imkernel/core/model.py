@@ -1061,7 +1061,7 @@ class Procedure(IndustryModel):
     name = get_group_name_df
 
 
-class System:
+class Model:
     def __init__(self):
         self.element = Element()
         self.method = Method()
