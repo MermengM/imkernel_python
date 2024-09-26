@@ -62,7 +62,7 @@ def shape_to_obj(shape: TopoDS_Shape):
     rwobj_writer.Perform(doc, a_file_info, Message_ProgressRange())
     # 检查文件是否成功创建
     if os.path.exists(file_name) and os.path.getsize(file_name) > 0:
-        logger.success(f"导出成功：{file_name}")
+        # logger.success(f"导出成功：{file_name}")
         return file_name
     else:
         logger.error(f"导出失败：{file_name}")

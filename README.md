@@ -5,10 +5,32 @@ API 来创建、管理和优化复杂的工业系统模型。
 
 ## 安装
 
+### 基础库安装
+
 使用 pip 安装 IM Kernel Python SDK：
 
 ```bash
 pip install imkernel
+```
+
+### 扩展库安装
+
+#### 三维展示采用pyvista+jupyter，故需要安装如下包：
+
+```bash
+pip install jupyterlab vtk trame ipywidgets 'pyvista[all,trame]' trame_jupyter_extension
+```
+
+安装jupyterhub中文包
+
+```
+pip install jupyterlab-language-pack-zh-CN
+```
+
+#### 同时也对matplotlib进行一些封装，故需要安装如下包：
+
+```bash
+pip install matplotlib
 ```
 
 ## 文档

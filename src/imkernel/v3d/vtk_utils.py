@@ -8,6 +8,9 @@ import datetime
 import asyncio
 from IPython.display import display, HTML, clear_output
 
+pv.global_theme.trame.jupyter_extension_enabled = True
+pv.set_jupyter_backend("client")
+
 
 def showObjFromFile(file_path: str, color: str = None):
     """
