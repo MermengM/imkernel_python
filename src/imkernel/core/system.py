@@ -96,8 +96,6 @@ class MethodNode(NodeBase):
                                     其中每个子列表对应一个参数组的数据
         """
         output_len = len(self.output_parameter_list)
-        print(len(parameter_data_list))
-        print(len(self.input_parameter_list))
         if len(parameter_data_list) != len(self.output_parameter_list):
             raise ValueError("参数数据列表长度与输入参数列表长度不匹配")
 
