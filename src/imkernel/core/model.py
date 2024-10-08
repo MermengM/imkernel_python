@@ -52,11 +52,58 @@ class ElementNode(NodeBase):
         # 如果找不到匹配的 group_name，返回 None
         return None
 
+    def get_parameter_list_name(self):
+        """
+        参数组名
+        :return:
+        """
+        rlist = []
+        for x in self.parameter_list:
+            rlist.append(x.get('group_name'))
+        return rlist
+
     def get_data_list(self):
+        """
+        获取单元节点所有data信息
+        :return:
+        """
         rlist = []
         for x in self.parameter_list:
             rlist.append(x.get('parameter_data'))
         return rlist
+
+    def get_data_by_index(self, index: int):
+        """
+        获取单元节点指定索引data信息
+        :param index:
+        """
+        combined_dict = {}
+        for item in self.parameter_list:
+            group_name = item['group_name']
+            parameter_data_dict: Dict = item['parameter_data']
+            data = parameter_data_dict.get(str(index))
+            combined_dict[group_name] = data
+
+        return combined_dict
+
+    def set_parameter_data_by_group_name_index(self, data_index: int, parameter_group_name: str, data_list):
+        """
+        增加参数数据
+        :param data_index:data索引
+        :param element_id:单元唯一标识符
+        :param parameter_group_name:参数组名称
+        :param data_list: 需要增加的参数数据列表
+        """
+        pg = self.find_parameters_by_group(parameter_group_name)
+        if pg is None:
+            raise KeyError(f"{self.id}下没有{parameter_group_name}")
+
+        # 如果 pg['parameter_data'] 还不是字典，先初始化为空字典
+        if 'parameter_data' not in pg:
+            pg['parameter_data'] = {}
+
+        # 根据 data_index 将 data_list 存储到字典中
+        pg['parameter_data'][str(data_index)] = data_list
 
 
 class MethodNode(NodeBase):
@@ -97,7 +144,7 @@ class MethodNode(NodeBase):
         """
         output_len = len(self.output_parameter_list)
         if len(parameter_data_list) != len(self.output_parameter_list):
-            raise ValueError("参数数据列表长度与输入参数列表长度不匹配")
+            raise ValueError("参数数据列表长度与输出参数列表长度不匹配")
 
         for i, data in enumerate(parameter_data_list):
             if 'parameter_data' not in self.output_parameter_list[i]:
@@ -122,6 +169,8 @@ class ProcedureNode(NodeBase):
         super().__init__(identification=id, desc=description)
         self.model_type: ModelType = model_type  # 模型类型
         self.is_tag: bool = is_tag  # 是否为标签
+        self.element_node: Optional[ElementNode] = None
+        self.method_node: Optional[MethodNode] = None
         self.method_name: str = ""
         self.element_name: str = ""
         # self.relative_method: MethodNode = None
@@ -143,6 +192,13 @@ class IndustryTree(TreeBase):
         :param parent_id: 父节点ID（可选）
         """
         super().add_node(node, parent_id)  # 调用父类方法
+
+    def remove_node(self, node: Union[ElementNode, MethodNode, ProcedureNode]):
+        """
+        删除指定节点
+        :param node: 要删除的节点
+        """
+        super().remove_node(node)
 
     def set_node_tag(self, node_id: Union[str, List[str]], tag: bool) -> None:
         """
@@ -211,6 +267,14 @@ class ElementTree(IndustryTree):
     def __init__(self):
         super().__init__()
 
+    def find_node_by_id(self, node_id: str) -> Optional[ElementNode]:
+        """
+        根据节点ID查找节点
+        :param node_id: 节点ID
+        :return: 节点或None
+        """
+        return self.nodes.get(node_id)
+
 
 class MethodTree(IndustryTree):
     def __init__(self):
@@ -218,10 +282,44 @@ class MethodTree(IndustryTree):
         self.roots: Dict[str, MethodNode] = {}
         self.nodes: Dict[str, MethodNode] = {}
 
+    def find_node_by_id(self, node_id: str) -> Optional[MethodNode]:
+        """
+        根据节点ID查找节点
+        :param node_id: 节点ID
+        :return: 节点或None
+        """
+        return self.nodes.get(node_id)
+
 
 class ProcedureTree(IndustryTree):
     def __init__(self):
         super().__init__()
+
+    def get_no_tag_nodes(self) -> List[ProcedureNode]:
+        """
+        获取所有未被标记为标签的节点
+        :return: 未被标记为标签的节点列表
+        """
+        return [node for node in self.nodes.values() if not node.is_tag]
+
+    def find_node_by_id(self, node_id: str) -> Optional[ProcedureNode]:
+        """
+        根据节点ID查找节点
+        :param node_id: 节点ID
+        :return: 节点或None
+        """
+        return self.nodes.get(node_id)
+
+
+def process_function_result(func_result):
+    if isinstance(func_result, tuple):
+        # if len(func_result) == 1:
+        #     # 当返回的 tuple 长度为 1 时的处理
+        #     return func_result[0]  # 返回 tuple 中的单个元素
+        return func_result
+    else:
+        # 当返回值不是 tuple 时的处理
+        return [func_result]
 
 
 class IndustryModel:
@@ -258,6 +356,17 @@ class IndustryModel:
         else:
             raise ValueError("类型错误")
 
+    def delete(self, id: str):
+        """
+        删除对象节点
+        :param id: 要删除的节点ID
+        """
+        node = self.get_by_id(id)
+        if node is None:
+            print(f"对象 '{id}' 未找到。")
+            return
+        self.tree.remove_node(node)
+
     def print_tree(self):
         """
         打印Id树
@@ -284,6 +393,17 @@ class IndustryModel:
         :return:
         """
         return self.tree.find_node_by_id(id)
+
+    def get_by_id_no_tag(self, id: str) -> Optional[Union[ElementNode, MethodNode, ProcedureNode, None]]:
+        """
+        根据ID查找节点（非tag节点）
+        :param id:
+        :return:
+        """
+        node = self.tree.find_node_by_id(id)
+        if not node or node.is_tag:
+            return None
+        return node
 
     def get_by_description(self, desc: str) -> List[Union[ElementNode, MethodNode, ProcedureNode]]:
         """
@@ -487,6 +607,24 @@ class Element(IndustryModel):
 
         # 根据 data_index 将 data_list 存储到字典中
         pg['parameter_data'][str(data_index)] = data_list
+
+    def set_parameter_data_by_id_index(self, data_index: int, element_id: str, parameter_group_name: str, data_list):
+        """
+        增加参数数据
+        :param data_index:data索引
+        :param element_id:单元唯一标识符
+        :param parameter_group_name:参数组名称
+        :param data_list: 需要增加的参数数据列表
+        """
+        if data_index + 1 <= len(self.model_data):
+            data = self.model_data[data_index]
+            # 在这里添加后续的处理逻辑
+        else:
+            raise KeyError(f"第{data_index}条数据不存在")
+        element: ElementNode = self.tree.find_node_by_id(element_id)
+        if not element:
+            raise KeyError(f"未找到{element_id}")
+        element.set_parameter_data_by_group_name_index(data_index=data_index, parameter_group_name=parameter_group_name, data_list=data_list)
 
     # endregion 数据层
     name = get_group_name_df
@@ -957,16 +1095,6 @@ class Method(IndustryModel):
         :param id: 方法名
         """
 
-        def process_function_result(func_result):
-            if isinstance(func_result, tuple):
-                # if len(func_result) == 1:
-                #     # 当返回的 tuple 长度为 1 时的处理
-                #     return func_result[0]  # 返回 tuple 中的单个元素
-                return func_result
-            else:
-                # 当返回值不是 tuple 时的处理
-                return [func_result]
-
         node: MethodNode = self.tree.find_node_by_id(id)
         if node.is_tag or node is None:
             raise Exception("节点不存在")
@@ -1022,8 +1150,9 @@ class Method(IndustryModel):
 
 
 class Procedure(IndustryModel):
-    def __init__(self):
+    def __init__(self, model):
         super().__init__(ModelType.Procedure)
+        self.model: Model = model
 
     def get_all_data_df(self) -> pd.DataFrame:
         """
@@ -1043,20 +1172,116 @@ class Procedure(IndustryModel):
         """
         return pd.DataFrame(self._get_id_list(), columns=["procedure name"])
 
-    def relate(self, procedure_name: str, element_name: Optional[str], method_name: Optional[str]):
-        procedure_node: ProcedureNode = self.get_by_id(procedure_name)
+    def relate(self, procedure_name: str, element_id: Optional[str], method_id: Optional[str]):
+        procedure_node: ProcedureNode = self.get_by_id_no_tag(procedure_name)
         if procedure_node is None:
             raise Exception(f"流程模型{procedure_name}未找到")
-        else:
-            procedure_node.element_name = element_name
-            procedure_node.method_name = method_name
+        e_node: ElementNode = self.model.element.get_by_id_no_tag(element_id)
+        m_node: MethodNode = self.model.method.get_by_id_no_tag(method_id)
+        if e_node is None:
+            raise Exception(f"单元模型{element_id}未找到")
+        if m_node is None:
+            raise Exception(f"方法模型{method_id}未找到")
+        # program = self.get_program_by_id(p_node.id)
+        #
+        # procedure_node: MethodNode =  .get_by_id(procedure_name)
+        #
+        procedure_node.element_node = e_node
+        procedure_node.element_name = procedure_node.element_node.id
+        procedure_node.method_node = m_node
+        procedure_node.method_name = procedure_node.method_node.id
 
     def show_relation(self):
         relation_list: list[list] = []
         for node in self.tree.get_no_tag_nodes():
-            relation_list.append([node.id, node.element_name, node.method_name])
+            node: ProcedureNode
+            relation_list.append([
+                node.id,
+                node.element_node.id if node.element_node else None,
+                node.method_node.id if node.method_node else None
+            ])
         df = pd.DataFrame(relation_list, columns=["procedure name", "element name", "method name"])
         return df
+
+    def run(self, id: str, element_index: int):
+        """
+        运行指定流程
+        :param id:唯一标识符
+        :param element_index:
+        """
+
+        procedure_node: ProcedureNode = self.tree.find_node_by_id(id)
+        if procedure_node.is_tag or procedure_node is None:
+            raise Exception("过程模型不存在")
+        element_node = procedure_node.element_node
+        method_node = procedure_node.method_node
+        if element_node is None or method_node is None:
+            raise Exception("未绑定单元/方法模型")
+
+        program = method_node.program
+
+        if program is None:
+            raise Exception("程序未指定")
+        # 分割py路径，函数名称
+        method_body, method_name = os.path.split(program[0])
+        if not method_body or not method_name:
+            raise Exception("方法体/方法获取失败")
+
+        # 处理输入输出参数
+        method_input_group_name = [p.get('group_name', []) for p in method_node.input_parameter_list]
+        method_input = [p.get('parameters', []) for p in method_node.input_parameter_list]
+        method_output_group_name = [p.get('group_name', []) for p in method_node.output_parameter_list]
+        method_output = [p.get('parameters', []) for p in method_node.output_parameter_list]
+        element_input_group_name = element_node.get_parameter_list_name()
+        element_input = element_node.get_data_list()
+
+        # 获取数据
+        if element_index > len(element_node.get_data_list()):
+            raise Exception(f"数据索引{element_index}超出范围")
+        # real_data = element_input[element_index]
+        real_data = element_node.get_data_by_index(element_index)
+        matched_input_data = {key: real_data[key] for key in method_input_group_name if key in real_data}
+
+        print(f"方法体：{method_body}，方法：{method_name}")
+        print(f"方法模型输入参数组：{method_input_group_name}")
+        print(f"方法模型输出参数组：{method_output_group_name}")
+        print(f"单元模型参数组：{element_input_group_name}")
+        print(f"匹配到{len(matched_input_data)}条参数组")
+        print(f"{matched_input_data}")
+        # 提取 matched_data 的值到一个列表
+        real_input_list = list(matched_input_data.values())
+
+        # print(f"参数：{input_par_list}")
+        # print(f"参数值：{input_data_list}")
+
+        print(f"尝试导入方法体")
+        # 获取算法
+        function = get_algorithm_by_path(method_body, method_name)
+        if not function:
+            raise Exception(f"未能导入{method_name}")
+        print(f"成功导入算法: {method_name}")
+
+        format_input = remove_empty_members(real_input_list)
+
+        # 开始计时
+        start_time = time.time()
+        func_result = function(*format_input)
+        format_result = process_function_result(func_result)
+
+        # 结束计时
+        end_time = time.time()
+
+        # 计算耗时
+        execution_time = end_time - start_time
+
+        print(f"算法运行完毕，耗时：{execution_time:.4f}秒")
+        matched_output_data = dict(zip(method_output_group_name, func_result))
+        # print(f"算法运行匹配结果：{matched_output_data}")
+        for group_name, data in matched_output_data.items():
+            element_node.set_parameter_data_by_group_name_index(data_index=element_index, parameter_group_name=group_name, data_list=data)
+
+        # logger.info(result)
+        return func_result
 
     name = get_group_name_df
 
@@ -1065,4 +1290,4 @@ class Model:
     def __init__(self):
         self.element = Element()
         self.method = Method()
-        self.procedure = Procedure()
+        self.procedure = Procedure(self)

@@ -3,7 +3,6 @@ import sys
 import json
 import os
 import pandas as pd
-from nbformat.v4 import new_notebook, new_code_cell
 
 
 def get_root_path():

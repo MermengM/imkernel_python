@@ -24,16 +24,18 @@ class TreeBase:
         # 添加到节点字典中
         self.nodes[node.id] = node
 
-    def remove_node(self, node_id: str) -> None:
-        node = self.nodes.pop(node_id, None)
-        if node:
+    def remove_node(self, node: NodeBase) -> None:
+        if node.id in self.nodes:
+            del self.nodes[node.id]
             if node.parent:
                 node.parent.remove_child(node)
             # 如果删除的是根节点，更新根节点列表
             if node.id in self.roots:
                 del self.roots[node.id]
-            for child in node.children:
-                self.remove_node(child.id)
+            for child in list(node.children):  # 创建一个子节点列表的副本
+                self.remove_node(child)
+        else:
+            raise Exception(f"未找到名为{node.id}的节点")
 
     def find_node_by_id(self, node_id) -> Optional[NodeBase]:
         return self.nodes.get(node_id)

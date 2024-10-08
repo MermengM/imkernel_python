@@ -13,13 +13,17 @@ CIMSH.element.create("blade_reality", "2.1 叶片实物", "manufacture_test_syst
 CIMSH.element.create("milling_machine", "2.2 铣床", "manufacture_test_system")
 CIMSH.element.create("test_device", "2.3 检测设备", "manufacture_test_system", True)
 CIMSH.element.create("visual_inspect_device", "2.3.1 视觉检测装置", "test_device")
-# CIMSH.element.print_tree()
 a = CIMSH.element.name()
+CIMSH.element.print_tree()
+# 删除节点
+CIMSH.element.delete('visual_inspect_device')
+CIMSH.element.print_tree()
+b = CIMSH.element.name()
 
 CIMSH.element.parameter_group("blade_optimize_system", ['feature', 'label'])
 CIMSH.element.parameter_group("blade", ['CAD_file'])
 CIMSH.element.parameter_group("curved_surface", ['CAD_file', 'control_point'])
-CIMSH.element.parameter_group("molded_line", ['eleven_parameter', 'sampling_point', 'control_point', 'point'])
+CIMSH.element.parameter_group("molded_line", ['eleven_parameter', 'molded_line_point_sampling_point', 'molded_line_control_point', 'point'])
 CIMSH.element.parameter_group("blade_reality", ['milling_tool_path', 'path_parameter', 'point_cloud', 'profile_error'])
 CIMSH.element.parameter_group("milling_machine", ['technological_parameter', 'NC_code'])
 CIMSH.element.parameter_group("visual_inspect_device", [])
@@ -40,16 +44,18 @@ CIMSH.element.add_model_data(['CIMSH-System1', '331-blade_01', '331-blade-sur001
 CIMSH.element.add_model_data(['CIMSH-System2', '331-blade_01', '331-blade-sur001', 'HEBUT-BL331-001', 'HEBUT-jindiao-001', 'HNU-cinema-001', 'visual_device-001'])
 CIMSH.element.add_model_data(['CIMSH-System3', '331-blade_01', '331-blade-sur001', 'HEBUT-BL331-001', 'HEBUT-jindiao-001', 'HNU-cinema-001', 'visual_device-001'])
 ddf = CIMSH.element.get_all_data_df()
-CIMSH.element.add_parameter_data(0, 'molded_line', 'eleven_parameter', [1, 2, 3, 4, 5, 6, 7, 8])
+CIMSH.element.add_parameter_data(0, 'molded_line', 'eleven_parameter', [
+    [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 0],
+    [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 20],
+    [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 50],
+    [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 80],
+    [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 100]])
+CIMSH.element.add_parameter_data(0, 'molded_line', 'molded_line_point_sampling_point', [[1, 2, 3], [1, 2, 3]])
+CIMSH.element.add_parameter_data(0, 'molded_line', 'molded_line_control_point', [[1, 2, 3], [1, 2, 3]])
 CIMSH.element.add_parameter_data(1, 'molded_line', 'eleven_parameter', [1, 2, 3, 4, 5, 6, 7, 8])
-CIMSH.element.add_parameter_data(0, 'molded_line', 'sampling_point', [[1, 2, 3], [1, 2, 3]])
-CIMSH.element.add_parameter_data(1, 'molded_line', 'sampling_point', [[1, 2, 3], [1, 2, 3]])
-CIMSH.element.add_parameter_data(0, 'molded_line', 'control_point', [[1, 2, 3], [1, 2, 3]])
-CIMSH.element.add_parameter_data(1, 'molded_line', 'control_point', [[1, 2, 3], [1, 2, 3]])
 aaa = CIMSH.element.get_all_data_parameter_df()
 print(CIMSH)
 # 创建Element实例
-CIMSH = Model()
 # create(id, description, parent_id, is_tag)
 CIMSH.method.create("blade_design_milling_optimization", "叶片设计铣削优化方法集", None, True)
 # 创建叶片设计方法
@@ -117,8 +123,8 @@ CIMSH.method.input_parameter_group("method_AI_data_filter", ["feature_label_data
 CIMSH.method.input_parameter_group("method_AI_model_train", ["filtered_feature_label_dataset"])
 CIMSH.method.input_parameter_group("method_AI_parameter_recommand", ["model_weight", "designate_parameter"])
 
-CIMSH.method.output_parameter_group("method_eleven_parameter", ["molded_line_control_point", "molded_line_point"])
-CIMSH.method.output_parameter_group("method_sampling_point", ["molded_line_control_point", "molded_line_point"])
+CIMSH.method.output_parameter_group("method_eleven_parameter", ["molded_line_point_sampling_point", "molded_line_control_point"])
+CIMSH.method.output_parameter_group("method_sampling_point", ["molded_line_point_sampling_point", "molded_line_control_point"])
 CIMSH.method.output_parameter_group("method_curved_surface_generate", ["curved_surface_control_point", "curved_surface_CAD"])
 CIMSH.method.output_parameter_group("method_blade_generate", ["blade_CAD"])
 CIMSH.method.output_parameter_group("method_path_plan", ["milling_tool_path"])
@@ -201,7 +207,7 @@ CIMSH.method.input_parameter_data('method_eleven_parameter', [[[50, 0.4149, 0.20
                                                                [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 80],
                                                                [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 100]], []])
 CIMSH.method.output_parameter_data('method_eleven_parameter', [[312, 41, 124], [214, 124, 4]])
-CIMSH.method.run('method_eleven_parameter')
+# CIMSH.method.run('method_eleven_parameter')
 CIMSH.method.show_parameters()
 aaa = CIMSH.method.show_parameter_data('method_eleven_parameter')
 print(CIMSH)
@@ -238,18 +244,15 @@ CIMSH.procedure.create("AI_optimization_recommand", "5.2 AI优化参数推荐", 
 CIMSH.procedure.print_tree()
 print(CIMSH.procedure.name())
 
-CIMSH.procedure.relate("molded_line_generate", "method_eleven_parameter", "curved_surface")
-CIMSH.procedure.relate("curved_surface_generate", "method_curved_surface_generate", "curved_surface")
-CIMSH.procedure.relate("blade_generate", "method_blade_generate", "blade")
-CIMSH.procedure.relate("path_plan", "method_path_plan", "physical_blade")
-CIMSH.procedure.relate("technological_design", "method_technological_design", "milling_machine")
-CIMSH.procedure.relate("milling", None, "milling_machine")
-CIMSH.procedure.relate("blade_visual_inspect", "method_blade_viaual_inspect", "visual_inspect_device")
-CIMSH.procedure.relate("experiment_design", "method_experiment_design", "blade_optimize_system")
-CIMSH.procedure.relate("experiment_data_collect", None, "blade_optimize_system")
-CIMSH.procedure.relate("AI_filter_model_train", "method_AI_filter_model_train", "blade_optimize_system")
-CIMSH.procedure.relate("AI_data_filter", "method_AI_data_filter", "blade_optimize_system")
-CIMSH.procedure.relate("AI_optimization_model_train", "method_AI_optimization_model_train", "blade_optimize_system")
-CIMSH.procedure.relate("AI_optimization_recommand", "method_AI_optimization_recommand", "blade_optimize_system")
+CIMSH.procedure.relate("molded_line_generate", "molded_line", "method_eleven_parameter")
+CIMSH.procedure.relate("curved_surface_generate", "curved_surface", "method_curved_surface_generate")
+CIMSH.procedure.relate("blade_generate", "blade", "method_blade_generate")
+CIMSH.procedure.relate("technological_design", "milling_machine", "method_technological_design")
+CIMSH.procedure.relate("blade_visual_inspect", "visual_inspect_device", "method_blade_viaual_inspect")
+CIMSH.procedure.relate("experiment_design", "blade_optimize_system", "method_experiment_design")
+CIMSH.procedure.relate("AI_filter_model_train", "blade_optimize_system", "method_AI_filter_model_train")
+CIMSH.procedure.relate("AI_data_filter", "blade_optimize_system", "method_AI_data_filter")
+
 a = CIMSH.procedure.show_relation()
+CIMSH.procedure.run('molded_line_generate', 0)
 print(CIMSH.procedure.show_relation())
