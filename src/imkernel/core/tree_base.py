@@ -83,29 +83,3 @@ class TreeBase:
 
     def __str__(self) -> str:
         return self.print_id()
-
-
-# 示例
-if __name__ == "__main__":
-    tree = TreeBase(print_format="name")
-    root1 = NodeBase("blade_optimize_system", {"name": "0.叶片铣削设计制造系统"})
-    child1 = NodeBase("design_system", {"name": "1.设计系统"})
-    child2 = NodeBase("blade", {"name": "1.1.叶片"})
-    child3 = NodeBase("curved_surface", {"name": "1.1.1.曲面"})
-    child4 = NodeBase("manufacture_test_system", {"name": "2.制造检测系统"})
-    child5 = NodeBase("physical_blade", {"name": "2.1.叶片实物"})
-    child6 = NodeBase("milling_machine", {"name": "2.2.铣床"})
-    child7 = NodeBase("test_device", {"name": "2.3.检测设备"})
-    child8 = NodeBase("visual_inspect_device", {"name": "2.3.1.视觉检测装置"})
-
-    tree.add_node(root1)
-    tree.add_node(child1, "blade_optimize_system")
-    tree.add_node(child2, "design_system")
-    tree.add_node(child3, "blade")
-    tree.add_node(child4, "blade_optimize_system")
-    tree.add_node(child5, "manufacture_test_system")
-    tree.add_node(child6, "manufacture_test_system")
-    tree.add_node(child7, "manufacture_test_system")
-    tree.add_node(child8, "test_device")
-
-    print(tree)

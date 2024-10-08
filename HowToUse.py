@@ -16,7 +16,6 @@ CIMSH.element.create("visual_inspect_device", "2.3.1 视觉检测装置", "test_
 a = CIMSH.element.name()
 CIMSH.element.print_tree()
 # 删除节点
-CIMSH.element.delete('visual_inspect_device')
 CIMSH.element.print_tree()
 b = CIMSH.element.name()
 
@@ -47,14 +46,18 @@ ddf = CIMSH.element.get_all_data_df()
 CIMSH.element.add_parameter_data(0, 'molded_line', 'eleven_parameter', [
     [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 0],
     [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 20],
-    [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 50],
-    [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 80],
-    [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 100]])
+
+])
 CIMSH.element.add_parameter_data(0, 'molded_line', 'molded_line_point_sampling_point', [[1, 2, 3], [1, 2, 3]])
 CIMSH.element.add_parameter_data(0, 'molded_line', 'molded_line_control_point', [[1, 2, 3], [1, 2, 3]])
 CIMSH.element.add_parameter_data(1, 'molded_line', 'eleven_parameter', [1, 2, 3, 4, 5, 6, 7, 8])
-aaa = CIMSH.element.get_all_data_parameter_df()
+aaa = CIMSH.element.get_all_parameter_data_df()
 print(CIMSH)
+
+A = CIMSH.element.get_parameter_group_name_list_by_element_id('molded_line')
+print(A)
+b = CIMSH.element.get_parameter_data_by_index('0')
+print(b)
 # 创建Element实例
 # create(id, description, parent_id, is_tag)
 CIMSH.method.create("blade_design_milling_optimization", "叶片设计铣削优化方法集", None, True)
@@ -203,9 +206,7 @@ CIMSH.method.output_parameter("method_AI_parameter_recommand", [["optimized_data
 CIMSH.method.show_parameters()
 CIMSH.method.input_parameter_data('method_eleven_parameter', [[[50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 0],
                                                                [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 20],
-                                                               [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 50],
-                                                               [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 80],
-                                                               [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 100]], []])
+                                                               ], []])
 CIMSH.method.output_parameter_data('method_eleven_parameter', [[312, 41, 124], [214, 124, 4]])
 # CIMSH.method.run('method_eleven_parameter')
 CIMSH.method.show_parameters()
@@ -256,3 +257,5 @@ CIMSH.procedure.relate("AI_data_filter", "blade_optimize_system", "method_AI_dat
 a = CIMSH.procedure.show_relation()
 CIMSH.procedure.run('molded_line_generate', 0)
 print(CIMSH.procedure.show_relation())
+adf = CIMSH.element.get_parameter_data_df(0, 'molded_line')
+print(adf)

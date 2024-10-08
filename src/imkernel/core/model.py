@@ -518,6 +518,19 @@ class IndustryModel:
 
         return df
 
+    def get_parameter_group_name_list_by_element_id(self, element_id: str) -> list[str]:
+        """
+        根据id获取参数组列表
+        :return:
+        """
+        output_list = []
+
+        for node_id, node in self.tree.nodes.items():
+            node: Union[ElementNode, MethodNode, ProcedureNode]
+            if not node.is_tag and node_id == element_id:
+                output_list = [p["group_name"] for p in node.parameter_list]
+        return output_list
+
     # endregion 参数层
 
     # region 数据层
@@ -558,9 +571,33 @@ class IndustryModel:
     parameter_group = set_parameter_group_by_id
 
 
+def filter_and_extract(data_list, index):
+    def process_item(item):
+        if isinstance(item, list):
+            return [process_item(sub_item) for sub_item in item]
+        elif isinstance(item, dict):
+            return item.get(index, [])
+        return []
+
+    return process_item(data_list)
+
+
 class Element(IndustryModel):
     def __init__(self):
         super().__init__(ModelType.Element)
+
+    def get_parameter_data_by_index(self, index: int) -> dict:
+        data_list = []
+        for node in self.tree.get_no_tag_nodes():
+            para_list = []
+            for para in node.parameter_list:
+                para_list.append(para.get('parameter_data'))
+            data_list.append(para_list)
+
+        filtered_list = filter_and_extract(data_list, str(index))
+
+        return filtered_list
+        # real_data_list = data_list[c_index]
 
     def get_group_name_df(self):
         """
@@ -640,7 +677,7 @@ class Element(IndustryModel):
         df.index = [f'element[{i}]' for i in range(len(df))]
         return df
 
-    def get_all_data_parameter_df(self) -> pd.DataFrame:
+    def get_all_parameter_data_df(self) -> pd.DataFrame:
         """
         获取所有数据并返回DataFrame，修改索引格式为element
         """
@@ -681,6 +718,39 @@ class Element(IndustryModel):
         df = pd.DataFrame.from_dict(new_dict, orient='index')
         df.columns = nodes_id_list
         df.index = [f'element [{i}]' for i in df.index]  # 设置索引
+        return df
+
+    def get_parameter_data_df(self, element_data_index: int, id: str):
+        """
+        根据单元索引+参数Id获取指定参数值
+        :param element_data_index:单元索引
+        :param id:参数Id
+        """
+        # 表头列表
+        nodes_id_list = self.tree.get_no_tag_nodes_id_list()
+        # 第N个参数
+        c_index = nodes_id_list.index(id)
+        if c_index < 0:
+            raise Exception(f"参数{id}不存在")
+
+        # 获取指定索引的参数值列表
+        data_list = self.get_parameter_data_by_index(element_data_index)
+        dataa_list = data_list[c_index]
+
+        # 参数组列表
+        p_g_list = self.get_parameter_group_name_list_by_element_id(id)
+        # 将p_g_list作为key，real_data_list作为value拼接成字典
+        result_dict = dict(zip(p_g_list, dataa_list))
+
+        # 找到最长列表的长度
+        max_length = max(len(v) for v in result_dict.values())
+
+        # 填充短列表
+        for k, v in result_dict.items():
+            if len(v) < max_length:
+                result_dict[k] = v + [None] * (max_length - len(v))
+        # 创建 DataFrame
+        df = pd.DataFrame(result_dict)
         return df
 
 
