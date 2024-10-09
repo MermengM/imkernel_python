@@ -22,7 +22,7 @@ from OCC.Core.XCAFDoc import XCAFDoc_DocumentTool
 from OCC.Core.STEPControl import STEPControl_Reader
 from OCC.Core.IFSelect import IFSelect_RetDone
 from imkernel.v3d.occ_utils import shape_to_obj
-from imkernel.v3d.vtk_utils import show_obj
+from imkernel.v3d.vtk_utils import show_obj, showMultiModel
 
 
 def show_occ_shape(shape: TopoDS_Shape):
@@ -51,3 +51,29 @@ def show_stp_shape(stp_file_path: str):
         show_occ_shape(shape)
     except Exception as e:
         print(f"{e} 文件{stp_file_path}加载失败")
+
+
+def show_stp_shapes(stp_file_path_list: list[str]):
+    multiModel = showMultiModel()
+    for stp_file_path in stp_file_path_list:
+        # 生成一个 step 模型类
+        reader = STEPControl_Reader()
+        # 加载一个文件并且返回一个状态枚举值
+        status = reader.ReadFile(stp_file_path)
+        # 如果正常执行且有模型
+        try:
+            if status == IFSelect_RetDone:  # check status
+                # 执行步骤文件转换
+                ok = reader.TransferRoot(1)
+                # 返回转换后的形状
+                shape = reader.Shape(1)
+            else:
+                print(f"文件{stp_file_path}加载失败，返回测试 Shape")
+                shape = BRepPrimAPI_MakeBox(1, 1, 1).Shape()
+            obj_file_path = shape_to_obj(shape)
+            if not obj_file_path:
+                raise Exception("obj生成失败")
+            multiModel.addModel(obj_file_path)
+        except Exception as e:
+            print(f"{e} 文件{stp_file_path}加载失败")
+    multiModel.show()
