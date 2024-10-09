@@ -210,11 +210,12 @@ CIMSH.method.input_parameter_data('method_eleven_parameter', [[[50, 0.4149, 0.20
                                                                [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 20],
                                                                ], []])
 CIMSH.method.output_parameter_data('method_eleven_parameter', [[312, 41, 124], [214, 124, 4]])
-# CIMSH.method.run('method_eleven_parameter')
-CIMSH.method.show_parameters()
-aaa = CIMSH.method.show_parameter_data('method_eleven_parameter')
+
+aaab = CIMSH.method.get_parameter_data_df()
+aaa = CIMSH.method.get_parameter_data_df('method_eleven_parameter')
 print(CIMSH)
 
+b = CIMSH.method.get_parameter_data('method_eleven_parameter', 3)
 # create(id, description, parent_id, is_tag)
 CIMSH.procedure.create("blade_design_milling_optimization", "叶片设计铣削优化", None, True)
 # 创建叶片设计流程

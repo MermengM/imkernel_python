@@ -1097,6 +1097,58 @@ class Method(IndustryModel):
 
     # endregion 参数层
     # region 数据层
+    def get_parameter_data(self, method_id_or_index: Union[str, int], para_id_or_index: Optional[Union[str, int]] = None):
+        """
+        获取方法模型的参数数据
+        :param method_id_or_index:模型ID/索引
+        :param para_id_or_index:模型参数名/索引
+        """
+        # 方法模型表头列表
+        method_id_list = self.tree.get_no_tag_nodes_id_list()
+        method_id_index = -1
+        # 索引
+        if isinstance(method_id_or_index, int):
+            # 有效
+            if method_id_or_index < len(method_id_list):
+                method_id_index = method_id_or_index
+            else:
+                raise Exception(f"索引{method_id_or_index}超出范围")
+        elif isinstance(method_id_or_index, str):
+            method_id_index = method_id_list.index(method_id_or_index)
+            if method_id_index < 0:
+                raise Exception(f"参数{method_id_or_index}不存在")
+        # 获取指定单元ID
+        method_id = method_id_list[method_id_index]
+        data_list = self._get_all_parameter_data_list(2, 2)
+        target_data_list = [x for x in data_list if x[0] == method_id_or_index]
+
+        if len(target_data_list) == 0:
+            raise Exception(f"{method_id_or_index}不存在")
+        elif len(target_data_list) > 1:
+            raise Exception(f"{method_id_or_index}不存在")
+        target_data_list = target_data_list[0]
+
+        # 如果参数索引为空，直接返回参数组数据
+        return_list = target_data_list[1:]
+        if para_id_or_index is None:
+            return return_list
+        # 参数索引不为空，进一步索引
+
+        # 指定单元模型参数组列表
+        para_group_index = -1
+        # 索引
+        if isinstance(para_id_or_index, int):
+            # 有效
+            if para_id_or_index < len(return_list):
+                para_group_index = para_id_or_index
+            else:
+                raise Exception(f"索引{para_id_or_index}超出范围")
+        # 参数名
+        elif isinstance(para_id_or_index, str):
+            raise Exception(f"当前版本仅接受索引(0,1,2...)取值")
+        # 获取指定参数组名称
+        return return_list[para_group_index]
+
     def get_all_data_df(self) -> pd.DataFrame:
         """
         获取所有数据并返回DataFrame，修改索引格式为element
@@ -1144,7 +1196,7 @@ class Method(IndustryModel):
         node = self.tree.find_node_by_id(id)
         self._add_parameter_data(node=node, id=id, type="output", data_list=data_list)
 
-    def get_all_parameter_data_list(self, max_input_len: int, max_output_len: int):
+    def _get_all_parameter_data_list(self, max_input_len: int, max_output_len: int):
         """
         获取所有参数数据列表
         :param max_output_len:
@@ -1174,7 +1226,21 @@ class Method(IndustryModel):
                 result_list.append(add_list)
         return result_list
 
-    def show_parameter_data(self, id: str = None):
+    def get_parameter_data_by_index(self, index: int) -> dict:
+        data_list = []
+        for node in self.tree.get_no_tag_nodes():
+            node: MethodNode
+            para_list = []
+            for para in node.input_parameter_list:
+                para_list.append(para.get('parameter_data'))
+            data_list.append(para_list)
+
+        filtered_list = filter_and_extract(data_list, str(index))
+
+        return filtered_list
+        # real_data_list = data_list[c_index]
+
+    def get_parameter_data_df(self, id: str = None):
         """
         展示方法parameter data
         :param id:
@@ -1185,7 +1251,7 @@ class Method(IndustryModel):
         if id is None or id.strip() == "":
             # 获取所有
             method_name_list = self.tree.get_no_tag_nodes_id_list()
-            output_list = self.get_all_parameter_data_list(max_input_len, max_output_len)
+            output_list = self._get_all_parameter_data_list(max_input_len, max_output_len)
             df = pd.DataFrame(output_list)
             # 设置列名
             columns = ["method_name"] + [f"input_{i}" for i in range(0, max_input_len)] + [f"output_{i}" for i in range(0, max_output_len)]
@@ -1195,7 +1261,7 @@ class Method(IndustryModel):
             if not node or node.is_tag:
                 raise Exception(f"未找到{id}")
             output_list = []
-            all_output_list = self.get_all_parameter_data_list(max_input_len, max_output_len)
+            all_output_list = self._get_all_parameter_data_list(max_input_len, max_output_len)
             for row in all_output_list:
                 if row and str(row[0]) == str(id):
                     output_list = row
