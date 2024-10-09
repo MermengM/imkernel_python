@@ -4,17 +4,11 @@ pyvista
 Trame
 trame-vtk
 trame-vuetify
-trame-components
-geomdl
-scipy
 jupyterlab-language-pack-zh-CN
 ipywidgets
-alive_progress
 pandas
-openpyxl
 jupyter-server-proxy
 loguru
-trimesh
 imageio
 setuptools
 wheel

@@ -720,15 +720,65 @@ class Element(IndustryModel):
         df.index = [f'element [{i}]' for i in df.index]  # 设置索引
         return df
 
-    def get_parameter_data_df(self, element_data_index: int, id: str):
+    def get_parameter_data(self, element_data_index: int, element_id_or_index: Union[str, int], para_id_or_index: Optional[Union[str, int]] = None):
         """
-        根据单元索引+参数Id获取指定参数值
+        根据单元索引+参数Id/参数索引获取指定参数值
+        :param element_data_index:单元模型整体数据索引
+        :param element_id_or_index:单元模型ID/索引
+        """
+        # 单元模型表头列表
+        element_id_list = self.tree.get_no_tag_nodes_id_list()
+        element_id_index = -1
+        # 索引
+        if isinstance(element_id_or_index, int):
+            # 有效
+            if element_id_or_index < len(element_id_list):
+                element_id_index = element_id_or_index
+            else:
+                raise Exception(f"索引{element_id_or_index}超出范围")
+        elif isinstance(element_id_or_index, str):
+            element_id_index = element_id_list.index(element_id_or_index)
+            if element_id_index < 0:
+                raise Exception(f"参数{element_id_or_index}不存在")
+        # 获取指定单元ID
+        element_id = element_id_list[element_id_index]
+        # 获取指定索引的参数值列表
+        element_data_list = self.get_parameter_data_by_index(element_data_index)
+        data_list = element_data_list[element_id_index]
+        # 如果参数索引为空，直接返回参数组数据
+        if para_id_or_index is None:
+            return data_list
+        # 参数索引不为空，进一步索引
+
+        # 指定单元模型参数组列表
+        para_group_list = self.get_parameter_group_name_list_by_element_id(element_id)
+        para_group_index = -1
+        # 索引
+        if isinstance(para_id_or_index, int):
+            # 有效
+            if para_id_or_index < len(para_group_list):
+                para_group_index = para_id_or_index
+            else:
+                raise Exception(f"索引{para_id_or_index}超出范围")
+        # 参数名
+        elif isinstance(para_id_or_index, str):
+            para_group_index = para_group_list.index(para_id_or_index)
+            if para_group_index < 0:
+                raise Exception(f"参数{para_id_or_index}不存在")
+        # 获取指定参数组名称
+        para_group_name = para_group_list[para_group_index]
+        para_data_list = data_list[para_group_index]
+        return para_data_list
+
+    def get_parameter_group_data_df(self, element_data_index: int, id: str):
+        """
+        根据单元索引+参数Id获取指定单元所有参数组数据
         :param element_data_index:单元索引
         :param id:参数Id
         """
         # 表头列表
         nodes_id_list = self.tree.get_no_tag_nodes_id_list()
-        # 第N个参数
+        # 索引
         c_index = nodes_id_list.index(id)
         if c_index < 0:
             raise Exception(f"参数{id}不存在")
@@ -749,7 +799,6 @@ class Element(IndustryModel):
         for k, v in result_dict.items():
             if len(v) < max_length:
                 result_dict[k] = v + [None] * (max_length - len(v))
-        # 创建 DataFrame
         df = pd.DataFrame(result_dict)
         return df
 

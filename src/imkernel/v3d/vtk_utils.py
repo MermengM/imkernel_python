@@ -1,8 +1,6 @@
 import re
 import numpy as np
 import pyvista as pv
-from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
-from OCC.Core.gp import gp_Pnt
 from vtk import vtkTransform
 import datetime
 import asyncio
@@ -12,7 +10,41 @@ pv.global_theme.trame.jupyter_extension_enabled = True
 pv.set_jupyter_backend("client")
 
 
-def ShowObj(file_path: str, color: str = None):
+def show_points_from_list(point_list, color: str = None, line_width: float = 1.0):
+    """
+    从x,y,z组成的点位list显示
+    [[1,2,3],[2,3,4]]
+    :param point_list:
+    :param color:
+    :param line_width:
+    """
+    plotter = pv.Plotter()
+    points = []
+    for point in point_list:
+        points.append([point[0], point[1], point[2]])
+    line_data = np.array(points, dtype=np.float32)
+    mesh = pv.MultipleLines(points=line_data)
+    plotter.add_mesh(mesh, line_width=line_width, color=color)
+    plotter.show()
+
+
+def show_multi_points_from_list(point_list_list, color: str = None, line_width: float = 1.0):
+    """
+    从x,y,z组成的点位list显示
+    [[[1,2,3],[2,3,4]],[[1,2,3],[2,3,4]]]
+    :param point_list_list:
+    :param color:
+    :param line_width:
+    """
+    plotter = pv.Plotter()
+    for point_list in point_list_list:
+        line_data = np.array(point_list, dtype=np.float32)
+        mesh = pv.MultipleLines(points=line_data)
+        plotter.add_mesh(mesh, line_width=line_width, color=color)
+    plotter.show()
+
+
+def show_obj(file_path: str, color: str = None):
     """
     从Obj显示文件
     :param file_path:
@@ -32,7 +64,7 @@ def ShowObj(file_path: str, color: str = None):
     plotter.show()
 
 
-def showPointsFromFile(file_path: str, color: str = None, handle_type: str = "txt"):
+def show_points_from_file(file_path: str, color: str = None, handle_type: str = "txt"):
     """
     从文件显示点
     :param file_path:
@@ -59,26 +91,6 @@ def showLineFromFile(file_path: str, color: str = None, line_width: float = 1.0,
     plotter.add_mesh(mesh, line_width=line_width, color=color)
     plotter.camera.azimuth = 45
     plotter.camera.zoom(0.8)
-    plotter.show()
-
-
-def showOneLineFromList(line_data_list, color: str = None, line_width: float = 1.0):
-    plotter = pv.Plotter()
-    points = []
-    for oneXYZ in line_data_list:
-        points.append([oneXYZ["x"], oneXYZ["y"], oneXYZ["z"]])
-    line_data = np.array(points, dtype=np.float32)
-    mesh = pv.MultipleLines(points=line_data)
-    plotter.add_mesh(mesh, line_width=line_width, color=color)
-    plotter.show()
-
-
-def showMultiLineFromList(lines_data_list, color: str = None, line_width: float = 1.0):
-    plotter = pv.Plotter()
-    for oneLine in lines_data_list:
-        line_data = np.array(oneLine, dtype=np.float32)
-        mesh = pv.MultipleLines(points=line_data)
-        plotter.add_mesh(mesh, line_width=line_width, color=color)
     plotter.show()
 
 
@@ -577,4 +589,5 @@ def showScatter_plot(file_path):
 
 
 if __name__ == '__main__':
-    ShowObj(r'C:\SHUSHE\Python\imkernel_python\src\imkernel\3DV\1.obj')
+    l = [[1, 2, 3], [2, 3, 4]]
+    show_points_from_list(l)

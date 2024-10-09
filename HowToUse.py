@@ -51,12 +51,14 @@ CIMSH.element.add_parameter_data(0, 'molded_line', 'eleven_parameter', [
 CIMSH.element.add_parameter_data(0, 'molded_line', 'molded_line_point_sampling_point', [[1, 2, 3], [1, 2, 3]])
 CIMSH.element.add_parameter_data(0, 'molded_line', 'molded_line_control_point', [[1, 2, 3], [1, 2, 3]])
 CIMSH.element.add_parameter_data(1, 'molded_line', 'eleven_parameter', [1, 2, 3, 4, 5, 6, 7, 8])
-aaa = CIMSH.element.get_all_parameter_data_df()
+b = CIMSH.element.get_parameter_group_data_df(0, 'molded_line')
+print(b)
+aaa = CIMSH.element.get_parameter_data(0, 3)
 print(CIMSH)
 
 A = CIMSH.element.get_parameter_group_name_list_by_element_id('molded_line')
 print(A)
-b = CIMSH.element.get_parameter_data_by_index('0')
+
 print(b)
 # 创建Element实例
 # create(id, description, parent_id, is_tag)

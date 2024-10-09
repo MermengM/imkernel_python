@@ -21,7 +21,7 @@ from OCC.Core.UnitsMethods import unitsmethods
 from OCC.Core.XCAFDoc import XCAFDoc_DocumentTool
 
 from imkernel.v3d.occ_utils import shape_to_obj
-from imkernel.v3d.vtk_utils import ShowObj
+from imkernel.v3d.vtk_utils import show_obj
 
 
 def show_occ_shape(shape: TopoDS_Shape):
@@ -29,4 +29,4 @@ def show_occ_shape(shape: TopoDS_Shape):
     obj_file_path = shape_to_obj(shape)
     if not obj_file_path:
         raise Exception("obj生成失败")
-    ShowObj(obj_file_path)
+    show_obj(obj_file_path)
