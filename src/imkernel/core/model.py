@@ -1307,7 +1307,7 @@ class Method(IndustryModel):
 
         # 开始计时
         start_time = time.time()
-        func_result = function(*format_input)
+        func_result = function(*input_data_list)
         format_result = process_function_result(func_result)
 
         # 结束计时
