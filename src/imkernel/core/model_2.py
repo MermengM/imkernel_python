@@ -10,10 +10,9 @@ class ModelLib:
         self.ELEMENT_MODEL_NAME = '_element'
         self.METHOD_MODEL_NAME = '_method'
         self.PROCEDURE_MODEL_NAME = '_procedure'
-        self.MACHINE_PERSON_NAME = '_person'
+        self.ELEMENT_MACHINE_NAME = '_machine'
         self.ELEMENT_PERSON_NAME = '_person'
-        self.PROCEDURE_MODEL_NAME = '_procedure'
-        self.PROCEDURE_MODEL_NAME = '_procedure'
+        self.ELEMENT_PRODUCT_NAME = '_product'
         self.tree = TreeBase()
         # 创建根节点
         self.tree.create_node(NodeBase(identification=ROOT_MODEL_NODE_NAME, desc=ROOT_MODEL_NODE_NAME))
@@ -38,7 +37,12 @@ class ModelLib:
         # 模型节点
         self.tree.create_node(NodeBase(identification=model_name, desc=model_name), ROOT_MODEL_NODE_NAME)
         # 单元、方法、流程节点
+        # 单元、人、机、物
         self.tree.create_node(NodeBase(identification=f"{model_name}{self.ELEMENT_MODEL_NAME}", desc=f"{model_name}{self.ELEMENT_MODEL_NAME}"), model_name)
+        self.tree.create_node(NodeBase(identification=f"{model_name}{self.ELEMENT_PERSON_NAME}", desc=f"{model_name}{self.ELEMENT_PERSON_NAME}"), f"{model_name}{self.ELEMENT_MODEL_NAME}")
+        self.tree.create_node(NodeBase(identification=f"{model_name}{self.ELEMENT_MACHINE_NAME}", desc=f"{model_name}{self.ELEMENT_MACHINE_NAME}"), f"{model_name}{self.ELEMENT_MODEL_NAME}")
+        self.tree.create_node(NodeBase(identification=f"{model_name}{self.ELEMENT_PRODUCT_NAME}", desc=f"{model_name}{self.ELEMENT_PRODUCT_NAME}"), f"{model_name}{self.ELEMENT_MODEL_NAME}")
+        # 方法
         self.tree.create_node(NodeBase(identification=f"{model_name}{self.METHOD_MODEL_NAME}", desc=f"{model_name}{self.METHOD_MODEL_NAME}"), model_name)
         self.tree.create_node(NodeBase(identification=f"{model_name}{self.PROCEDURE_MODEL_NAME}", desc=f"{model_name}{self.PROCEDURE_MODEL_NAME}"), model_name)
 
