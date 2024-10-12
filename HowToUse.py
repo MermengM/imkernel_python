@@ -264,4 +264,3 @@ CIMSH.procedure.run('molded_line_generate', 0)
 # CIMSH.procedure.run('curved_surface_generate', 0)
 print(CIMSH.procedure.show_relation())
 print('567')
-a = []
