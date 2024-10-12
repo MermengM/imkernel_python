@@ -258,9 +258,9 @@ CIMSH.procedure.relate("AI_filter_model_train", "blade_optimize_system", "method
 CIMSH.procedure.relate("AI_data_filter", "blade_optimize_system", "method_AI_data_filter")
 
 # a = CIMSH.procedure.show_relation()
-# CIMSH.procedure.run('molded_line_generate', 0)
+CIMSH.procedure.run('molded_line_generate', 0)
 # print(CIMSH.procedure.show_relation())
 # adf = CIMSH.element.get_parameter_data_df(0, 'molded_line')
-CIMSH.procedure.run('curved_surface_generate', 0)
+# CIMSH.procedure.run('curved_surface_generate', 0)
 print(CIMSH.procedure.show_relation())
 print('567')

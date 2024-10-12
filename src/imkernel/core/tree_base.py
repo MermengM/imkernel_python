@@ -8,7 +8,7 @@ class TreeBase:
         self.roots: dict[str, NodeBase] = {}  # 用于存储森林中的根节点
         self.nodes: dict[str, NodeBase] = {}  # 用于存储所有节点
 
-    def add_node(self, node: NodeBase, parent_id: str = None) -> None:
+    def create_node(self, node: NodeBase, parent_id: str = None) -> None:
         # 如果没有 parent_id，则该节点是根节点
         if parent_id is None:
             if node.id in self.roots:

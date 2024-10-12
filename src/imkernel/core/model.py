@@ -183,13 +183,13 @@ class IndustryTree(TreeBase):
         self.roots: Dict[str, Union[ElementNode, MethodNode, ProcedureNode]] = {}  # 用于存储森林中的根节点
         self.nodes: Dict[str, Union[ElementNode, MethodNode, ProcedureNode]] = {}  # 用于存储所有节点
 
-    def add_node(self, node: Union[ElementNode, MethodNode, ProcedureNode], parent_id: str = None) -> None:
+    def create_node(self, node: Union[ElementNode, MethodNode, ProcedureNode], parent_id: str = None) -> None:
         """
         添加节点
         :param node: SystemNode 类型的节点
         :param parent_id: 父节点ID（可选）
         """
-        super().add_node(node, parent_id)  # 调用父类方法
+        super().create_node(node, parent_id)  # 调用父类方法
 
     def remove_node(self, node: Union[ElementNode, MethodNode, ProcedureNode]):
         """
@@ -346,11 +346,11 @@ class IndustryModel:
         创建对象节点
         """
         if self.model_type == ModelType.Element:
-            self.tree.add_node(ElementNode(model_type=self.model_type, id=id, description=description, is_tag=is_tag), parent_id)
+            self.tree.create_node(ElementNode(model_type=self.model_type, id=id, description=description, is_tag=is_tag), parent_id)
         elif self.model_type == ModelType.Method:
-            self.tree.add_node(MethodNode(model_type=self.model_type, id=id, description=description, is_tag=is_tag), parent_id)
+            self.tree.create_node(MethodNode(model_type=self.model_type, id=id, description=description, is_tag=is_tag), parent_id)
         elif self.model_type == ModelType.Procedure:
-            self.tree.add_node(ProcedureNode(model_type=self.model_type, id=id, description=description, is_tag=is_tag), parent_id)
+            self.tree.create_node(ProcedureNode(model_type=self.model_type, id=id, description=description, is_tag=is_tag), parent_id)
         else:
             raise ValueError("类型错误")
 
@@ -1303,7 +1303,7 @@ class Method(IndustryModel):
             raise Exception(f"未能导入{method_name}")
         # print(f"成功导入算法: {method_name}")
 
-        format_input = remove_empty_members(input_data_list)
+        # format_input = remove_empty_members(input_data_list)
 
         # 开始计时
         start_time = time.time()
@@ -1455,11 +1455,11 @@ class Procedure(IndustryModel):
             raise Exception(f"未能导入{method_name}")
         print(f"成功导入算法: {method_name}")
 
-        format_input = remove_empty_members(real_input_list)
+        # format_input = remove_empty_members(real_input_list)
 
         # 开始计时
         start_time = time.time()
-        func_result = function(*format_input)
+        func_result = function(*real_input_list)
         format_result = process_function_result(func_result)
 
         # 结束计时
