@@ -96,7 +96,7 @@ class ElementNode(NodeBase):
         """
         pg = self.find_parameters_by_group(parameter_group_name)
         if pg is None:
-            pass
+            return
             # raise KeyError(f"{self.id}下没有{parameter_group_name}")
 
         # 如果 pg['parameter_data'] 还不是字典，先初始化为空字典
