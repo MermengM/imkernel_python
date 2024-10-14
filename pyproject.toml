@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "imkernel"
-version = "1.5.2"
+version = "1.5.4"
 authors = [
     { name = "ermeng", email = "ermeng@ermeng.fun" },
 ]
@@ -27,8 +27,7 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/MermengM/imkernel_python"
+"Homepage" = "https://mermengm.github.io/imkernel_python_docs/"
 "Bug Tracker" = "https://github.com/MermengM/imkernel_python/issues"
-
 [tool.setuptools.packages.find]
 where = ["src"]
