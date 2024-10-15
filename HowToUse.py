@@ -13,8 +13,9 @@ CIMSH.element.create("blade_reality", "2.1 叶片实物", "manufacture_test_syst
 CIMSH.element.create("milling_machine", "2.2 铣床", "manufacture_test_system")
 CIMSH.element.create("test_device", "2.3 检测设备", "manufacture_test_system", True)
 CIMSH.element.create("visual_inspect_device", "2.3.1 视觉检测装置", "test_device")
+# CIMSH.element.create("test", "2.3.2 视觉检测装置", "test_device")
 a = CIMSH.element.name()
-CIMSH.element.print_tree()
+
 # 删除节点
 CIMSH.element.print_tree()
 b = CIMSH.element.name()
@@ -26,6 +27,7 @@ CIMSH.element.parameter_group("molded_line", ['eleven_parameter', 'molded_line_p
 CIMSH.element.parameter_group("blade_reality", ['milling_tool_path', 'path_parameter', 'point_cloud', 'profile_error'])
 CIMSH.element.parameter_group("milling_machine", ['technological_parameter', 'NC_code'])
 CIMSH.element.parameter_group("visual_inspect_device", [])
+# CIMSH.element.parameter_group("test", ['基础参数', "进阶菜蔬"])
 CIMSH.element.parameter("blade_optimize_system", [[f"feature {i}" for i in range(0, 3)], [f"label {j}" for j in range(0, 2)]])
 CIMSH.element.parameter("blade", [['obj_file']])
 CIMSH.element.parameter("curved_surface", [['obj_file'], ['X', 'Y', 'Z']])
@@ -35,6 +37,7 @@ CIMSH.element.parameter("molded_line", [["Chord_Length", "Upper_Max_Width", "Upp
 CIMSH.element.parameter("blade_reality", [['X', 'Y', 'Z', 'I', 'J', 'K'], ['Cutter_diameter', 'Cutting_depth', 'Residual_height'], ['txt_file'], ['profile_error']])
 CIMSH.element.parameter("milling_machine", [['Cutter_length', 'Cutter_angle', 'Feed_speed', 'Spindle_speed'], ['txt_file']])
 CIMSH.element.parameter("visual_inspect_device", [])
+# CIMSH.element.parameter("test", [['name', 'id', 'depart'], ['birth', '']])
 
 CIMSH.element.show_parameters_group()
 CIMSH.element.show_parameters()
@@ -42,6 +45,7 @@ CIMSH.element.add_model_data(['CIMSH-System1', '331-blade_01', '331-blade-sur001
 CIMSH.element.add_model_data(['CIMSH-System2', '331-blade_01', '331-blade-sur001', 'HEBUT-BL331-001', 'HEBUT-jindiao-001', 'HNU-cinema-001', 'visual_device-001'])
 CIMSH.element.add_model_data(['CIMSH-System3', '331-blade_01', '331-blade-sur001', 'HEBUT-BL331-001', 'HEBUT-jindiao-001', 'HNU-cinema-001', 'visual_device-001'])
 ddf = CIMSH.element.get_all_data_df()
+CIMSH.element.add_parameter_data(0, 'blade_optimize_system', 'feature', [5676])
 CIMSH.element.add_parameter_data(0, 'molded_line', 'eleven_parameter', [
     [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 0],
     [50, 0.4149, 0.2098, 0.0582, 0.4492, 0.3339, 0.234, 0.7289, 0.2497, 0.52, 0.8523, 0.5, 20],
@@ -58,7 +62,6 @@ print(CIMSH)
 A = CIMSH.element.get_parameter_group_name_list_by_element_id('molded_line')
 print(A)
 
-print(b)
 # 创建Element实例
 # create(id, description, parent_id, is_tag)
 CIMSH.method.create("blade_design_milling_optimization", "叶片设计铣削优化方法集", None, True)
@@ -257,10 +260,12 @@ CIMSH.procedure.relate("experiment_design", "blade_optimize_system", "method_exp
 CIMSH.procedure.relate("AI_filter_model_train", "blade_optimize_system", "method_AI_filter_model_train")
 CIMSH.procedure.relate("AI_data_filter", "blade_optimize_system", "method_AI_data_filter")
 
-# a = CIMSH.procedure.show_relation()
-CIMSH.procedure.run('molded_line_generate', 0)
+alldata = CIMSH.to_json()
+print(alldata)
+# # a = CIMSH.procedure.show_relation()
+# CIMSH.procedure.run('molded_line_generate', 0)
+# # print(CIMSH.procedure.show_relation())
+# # adf = CIMSH.element.get_parameter_data_df(0, 'molded_line')
+# # CIMSH.procedure.run('curved_surface_generate', 0)
 # print(CIMSH.procedure.show_relation())
-# adf = CIMSH.element.get_parameter_data_df(0, 'molded_line')
-# CIMSH.procedure.run('curved_surface_generate', 0)
-print(CIMSH.procedure.show_relation())
-print('567')
+# print('567')

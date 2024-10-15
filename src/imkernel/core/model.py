@@ -1,8 +1,10 @@
+import json
 import os
 from typing import Optional, Union, List, Dict, Any
 from abc import ABC, abstractmethod
 import pandas as pd
 import time
+import copy
 
 from . import get_algorithm_by_path
 from .tree_base import TreeBase
@@ -241,7 +243,7 @@ class IndustryTree(TreeBase):
         """
         return self.nodes.get(node_id)
 
-    def _format_node(self, node: NodeBase, format_type) -> str:
+    def _format_node(self, node: NodeBase, format_type, addition_string="√") -> str:
         """
         重写基类_format_node方法
         :param node:
@@ -258,8 +260,20 @@ class IndustryTree(TreeBase):
         if node.is_tag:
             pass
         else:
-            node_info += f" √"
+            node_info += addition_string
         return node_info
+
+    def _tree_to_dict(self, format_type: str = "id"):
+        def node_to_dict(node):
+            node_dict = {
+                "name": self._format_node(node, format_type, addition_string="")
+            }
+            if node.children:
+                node_dict["children"] = [node_to_dict(child) for child in node.children]
+            return node_dict
+
+        roots = self.roots.values()  # 假设树有一个roots属性，是一个包含所有根节点的列表
+        return [node_to_dict(root) for root in roots]
 
 
 class ElementTree(IndustryTree):
@@ -801,6 +815,90 @@ class Element(IndustryModel):
         df = pd.DataFrame(result_dict)
         return df
 
+    def get_parameter_name_data(self, index, element_id, element_name_index):
+        template = {
+            'name': '',
+            'data': ''
+        }
+        name_list = self._get_all_parameter_name_list()[element_name_index]
+        name_list = name_list[1:]
+        data_list = self.get_parameter_data(index, element_id)
+
+        combined_templates = []
+
+        for name, data in zip(name_list, data_list):
+            new_template = copy.deepcopy(template)
+            new_template['name'] = name
+            new_template['data'] = data
+            combined_templates.append(new_template)
+
+        return combined_templates
+
+    def get_parameter_group_name_data(self, element_name, element_data_index, element_name_index):
+        template = {
+            'name': self.get_parameter_group_name_list_by_element_id(element_name),
+            'parameters': self.get_parameter_name_data(element_data_index, element_name, element_name_index),
+        }
+        # template = {
+        #     'name': '',
+        #     'parameter_groups': ''
+        # }
+        r_list = []
+        # for element_data_index in self.tree.get():
+        #     new_template = copy.deepcopy(template)
+        #     print(self.model_data[int(element_data_index)][element_name_index])
+        #     new_template['name'] = self.model_data[int(element_data_index)][element_name_index]
+        #     new_template['parameter_groups'] = self.get_parameter_group_name_data(element_name, element_data_index, element_name_index)
+        #     r_list.append(new_template)
+        # return r_list
+        return template
+
+    def get_element_data(self, element_name, element_name_index):
+        template = {
+            'name': '',
+            'parameter_groups': ''
+        }
+        r_list = []
+        for element_data_index in range(len(self.model_data)):
+            new_template = copy.deepcopy(template)
+            print(self.model_data[int(element_data_index)][element_name_index])
+            new_template['name'] = self.model_data[int(element_data_index)][element_name_index]
+            new_template['parameter_groups'] = self.get_parameter_group_name_data(element_name, element_data_index, element_name_index)
+            r_list.append(new_template)
+        return r_list
+
+    def model_to_dict(self):
+        template = {
+            'element_index': 0,
+            'name': '0',
+            'data': [
+
+            ]
+        }
+
+        json_list = []
+
+        element_name_list = self.tree.get_no_tag_nodes_id_list()
+        for i, element_name in enumerate(element_name_list):
+            new_template = copy.deepcopy(template)
+            new_template['element_index'] = i
+            new_template['name'] = element_name
+            new_template['data'] = self.get_element_data(element_name, i)
+            json_list.append(new_template)
+        return json_list
+
+    def to_json(self):
+        """
+        获取单元模型所有数据（json)
+        :param data_list:数据列表
+        """
+        r_json = {
+            'tree': self.tree._tree_to_dict(),
+            'model': self.model_to_dict()
+
+        }
+        return r_json
+
 
 class Method(IndustryModel):
     def __init__(self):
@@ -1332,6 +1430,14 @@ class Method(IndustryModel):
     input_parameter_data = set_input_parameter_data
     output_parameter_data = set_output_parameter_data
 
+    def to_json(self):
+        """
+        获取方法模型所有数据（json)
+        :param data_list:数据列表
+        """
+        r_json = {'tree': self.tree._tree_to_dict()}
+        return r_json
+
 
 class Procedure(IndustryModel):
     def __init__(self, model):
@@ -1480,6 +1586,14 @@ class Procedure(IndustryModel):
         # logger.info(result)
         return func_result
 
+    def to_json(self):
+        """
+        获取过程模型所有数据（json)
+        :param data_list:数据列表
+        """
+        r_json = {'tree': self.tree._tree_to_dict()}
+        return r_json
+
     name = get_group_name_df
 
 
@@ -1488,3 +1602,12 @@ class Model:
         self.element = Element()
         self.method = Method()
         self.procedure = Procedure(self)
+
+    def to_json(self):
+        r_json = {
+            "element": self.element.to_json(),
+            "method": self.method.to_json(),
+            "procedure": self.procedure.to_json(),
+
+        }
+        return json.dumps(r_json)

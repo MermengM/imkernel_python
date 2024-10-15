@@ -2,17 +2,16 @@ import imkernel
 from imkernel.core import ModelLib
 from imkernel.core.model_2 import NewModel
 
-a = ModelLib()
-a.create_new_model('insofaiam')
-a.create_new_model('insoftest')
-a.create_new_model('insofrobot')
-
-print(a)
-print(a.insoftest)
-insoftest: NewModel = a.insoftest
+modeltype = ModelLib()
+modeltype.create_new_model('insofaiam')
+modeltype.create_new_model('insoftest')
+modeltype.create_new_model('insofrobot')
+print(modeltype)
+print(modeltype.insoftest)
+insoftest: NewModel = modeltype.insoftest
 insoftest.add_subtype('DTIS-511')
 insoftest.add_subtype('NDT-SNPTC')
-show_type_df = a.show_subtype()
+show_type_df = modeltype.show_subtype()
 insoftest.add_parameter('人员')
 insoftest.add_parameter('机构')
 insoftest.add_parameter('职位')
