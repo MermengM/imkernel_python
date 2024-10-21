@@ -498,7 +498,7 @@
 #
 #     # print(f"尝试导入方法体")
 #     # 获取算法
-#     function = get_algorithm_by_path(algo_file,algo_name )
+#     function = get_algorithm_by_path(algo_file, algo_name)
 #     if not function:
 #         raise Exception(f"未能导入{algo_file}")
 #     print(f"算法运行中")

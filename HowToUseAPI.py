@@ -1,7 +1,8 @@
-from imkernel.utils.tree_utils import tree_to_df
 from treelib import Tree
+from imkernel.core.api_utils import APIUtils
+from imkernel.core.node import Node
+from imkernel import get_paths_dict
 
-# 示例树
 tree = Tree()
 tree.create_node("modeltype", "modeltype")  # 根节点
 tree.create_node("insofaiam", "insofaiam", parent="modeltype")
@@ -19,11 +20,21 @@ tree.create_node("职位", "position", parent="DTIS-511")
 tree.create_node("角色", "role", parent="DTIS-511")
 tree.create_node("账号", "account", parent="DTIS-511")
 tree.create_node("你好", "nihao", parent="insoftube")
-
-index_levels = ['model', 'model_type', 'submodel type', 'person']
-columns = ['penson0', 'person1']
-# index_levels=None
-# columns=None
-df = tree_to_df(tree=tree, index_num=4, columns_num=2, index_levels=index_levels, columns=columns)
-print(df)
-df
+a = get_paths_dict(tree)
+print(a)
+api_utils = APIUtils("http://139.196.154.85:54742")
+try:
+    # api_utils.create_node("ExampleNode", "example_type")  # 创建节点.
+    print(api_utils.get_all_model())  # 获取所有model
+    # print(api_utils.get_all_supermodel())  # 获取所有supermodel
+    # print(api_utils.tree_init())  # 初始化树
+    # node = api_utils.trees()
+    # node[0].print_tree()
+    # api_utils.create_model('DTIS-511', 'insoftest')
+    # node = api_utils.get_node_by_id('1847150891292037120')
+    # node[0].print_tree()
+    # api_utils.create_node("ExampleNode", "example_type")  # 创建节点
+    # api_utils.create_node("ExampleNode", "example_type")  # 创建节点
+    print(1)
+except Exception as e:
+    print(e)

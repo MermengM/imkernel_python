@@ -45,7 +45,7 @@ def dict_to_df(paths_dict, names, columns):
     return df
 
 
-def tree_to_df(tree, index_num=None, columns_num=2, index_levels=None, columns=None):
+def tree_to_df(tree, index_num=None, columns_num=None, index_levels=None, columns=None):
     """
     获取从根节点到叶子节点的路径，并将ID替换为TAG，返回一个df。
     根据路径字典生成df，多级索引的层数可以根据用户输入的index_num选择。
@@ -54,7 +54,7 @@ def tree_to_df(tree, index_num=None, columns_num=2, index_levels=None, columns=N
     参数:
     tree (Tree): treelib中的树结构。
     index_num: 选择的多级索引层数，默认为路径的最大层数
-    columns_num: DataFrame列的数量，默认为2列
+    columns_num: DataFrame列的数量，默认为None
     index_levels: 多级索引的列名，默认使用 ['level_1', 'level_2', ..., 'level_n']
     columns: 除未选择层级外的其他列名，默认为 ['column_1', 'column_2', ..., 'column_n']
 
@@ -84,6 +84,14 @@ def tree_to_df(tree, index_num=None, columns_num=2, index_levels=None, columns=N
     # 如果没有指定index_levels，默认使用 ['level_1', 'level_2', ..., 'level_n']
     if index_levels is None:
         index_levels = [f'level_{i + 1}' for i in range(index_num)]
+
+    # 如果columns为None且columns_num为NaN，默认columns_num为2
+    if columns_num is None and columns is None:
+        columns_num = 2
+
+    # 如果传入了columns且columns_num为NaN，则columns_num等于columns的长度
+    if columns is not None and columns_num is None:
+        columns_num = len(columns)
 
     # 如果用户提供的columns长度大于columns_num，报错
     if columns is not None and len(columns) > columns_num:
@@ -118,5 +126,7 @@ def tree_to_df(tree, index_num=None, columns_num=2, index_levels=None, columns=N
 
     # 将剩余的层级与空的DataFrame合并
     df = pd.concat([df, remaining_columns], axis=1)
+    # 替换 NaN 为 None
+    df = df.map(lambda x: None if pd.isna(x) else x)
 
     return df
