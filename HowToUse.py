@@ -259,8 +259,8 @@ CIMSH.procedure.relate("blade_visual_inspect", "visual_inspect_device", "method_
 CIMSH.procedure.relate("experiment_design", "blade_optimize_system", "method_experiment_design")
 CIMSH.procedure.relate("AI_filter_model_train", "blade_optimize_system", "method_AI_filter_model_train")
 CIMSH.procedure.relate("AI_data_filter", "blade_optimize_system", "method_AI_data_filter")
-
-alldata = CIMSH.to_json()
+a = CIMSH.to_json()
+alldata = CIMSH.element.to_json_flat()
 print(alldata)
 # # a = CIMSH.procedure.show_relation()
 # CIMSH.procedure.run('molded_line_generate', 0)

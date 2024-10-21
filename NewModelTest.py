@@ -1,6 +1,5 @@
-from .utils import SnowflakeIDGenerator
-from . import NodeBase
-from . import TreeBase
+from imkernel.core.utils import SnowflakeIDGenerator
+from imkernel.core import NodeBase, TreeBase
 import pandas as pd
 
 id_generator = SnowflakeIDGenerator(datacenter_id=1, worker_id=1)
@@ -46,11 +45,32 @@ class Parameter:
 
 class NewModel:
     def __init__(self, model_name, model_desc):
+        self.METHOD_MODEL_NAME = 'method'
+        self.PROCEDURE_MODEL_NAME = 'procedure'
+        self.ELEMENT_MACHINE_NAME = 'machine'
+        self.ELEMENT_PERSON_NAME = 'person'
+        self.ELEMENT_PRODUCT_NAME = 'product'
+        self.tree = TreeBase()
+        self.model_id = id_generator.generate_id()
         self.model_name = model_name
         self.model_desc = model_desc
         self.model_subtype_list: list[SubType] = []
         self.parameter_list: list[Parameter] = []
         self.element_id_dict = {}
+
+        # region 树结构处理
+
+        # 根节点
+        self.tree.create_node(NodeBase(identification=model_name, desc=model_name), self.ROOT_MODEL_NODE_NAME)
+        # 单元、方法、流程节点
+        # 单元、人、机、物
+        self.tree.create_node(NodeBase(identification=id_generator.generate_id(), desc=f"{self.ELEMENT_PERSON_NAME}"), model_name)
+        self.tree.create_node(NodeBase(identification=id_generator.generate_id(), desc=f"{self.ELEMENT_MACHINE_NAME}"), model_name)
+        self.tree.create_node(NodeBase(identification=id_generator.generate_id(), desc=f"{self.ELEMENT_PRODUCT_NAME}"), model_name)
+        # 方法
+        self.tree.create_node(NodeBase(identification=id_generator.generate_id(), desc=f"{self.METHOD_MODEL_NAME}"), model_name)
+        self.tree.create_node(NodeBase(identification=id_generator.generate_id(), desc=f"{self.PROCEDURE_MODEL_NAME}"), model_name)
+        # endregion
 
     def __getattr__(self, name):
         """
@@ -86,18 +106,31 @@ class ModelLib:
     def __init__(self):
         # 固定名称
         self.ROOT_MODEL_NODE_NAME = "model"
-        self.ELEMENT_MODEL_NAME = 'element'
-        self.METHOD_MODEL_NAME = 'method'
-        self.PROCEDURE_MODEL_NAME = 'procedure'
-        self.ELEMENT_MACHINE_NAME = 'machine'
-        self.ELEMENT_PERSON_NAME = 'person'
-        self.ELEMENT_PRODUCT_NAME = 'product'
+        self.insofaiam_name = 'insofaiam'
+        self.insofrobot_name = 'insofrobot'
+        self.insoftest_name = 'insoftest'
+
         # 树结构
         self.tree = TreeBase()
         # 模型列表
         self.model_list = []
         # 创建根节点
         self.tree.create_node(NodeBase(identification=self.ROOT_MODEL_NODE_NAME, desc=self.ROOT_MODEL_NODE_NAME))
+        # 模型节点
+        self.tree.create_node(NodeBase(identification=model_name, desc=model_name), self.ROOT_MODEL_NODE_NAME)
+        # 单元、方法、流程节点
+        # 单元、人、机、物
+        self.tree.create_node(NodeBase(identification=f"{self.ELEMENT_PERSON_NAME}", desc=f"{self.ELEMENT_PERSON_NAME}"), model_name)
+        self.tree.create_node(NodeBase(identification=f"{self.ELEMENT_MACHINE_NAME}", desc=f"{self.ELEMENT_MACHINE_NAME}"), model_name)
+        self.tree.create_node(NodeBase(identification=f"{self.ELEMENT_PRODUCT_NAME}", desc=f"{self.ELEMENT_PRODUCT_NAME}"), model_name)
+        # self.tree.create_node(NodeBase(identification=f"{model_name}{self.ELEMENT_MODEL_NAME}", desc=f"{model_name}{self.ELEMENT_MODEL_NAME}"), model_name)
+        # self.tree.create_node(NodeBase(identification=f"{model_name}{self.ELEMENT_PERSON_NAME}", desc=f"{model_name}{self.ELEMENT_PERSON_NAME}"), f"{model_name}{self.ELEMENT_MODEL_NAME}")
+        # self.tree.create_node(NodeBase(identification=f"{model_name}{self.ELEMENT_MACHINE_NAME}", desc=f"{model_name}{self.ELEMENT_MACHINE_NAME}"), f"{model_name}{self.ELEMENT_MODEL_NAME}")
+        # self.tree.create_node(NodeBase(identification=f"{model_name}{self.ELEMENT_PRODUCT_NAME}", desc=f"{model_name}{self.ELEMENT_PRODUCT_NAME}"), f"{model_name}{self.ELEMENT_MODEL_NAME}")
+        # 方法
+        self.tree.create_node(NodeBase(identification=f"{self.METHOD_MODEL_NAME}", desc=f"{self.METHOD_MODEL_NAME}"), model_name)
+        self.tree.create_node(NodeBase(identification=f"{self.PROCEDURE_MODEL_NAME}", desc=f"{self.PROCEDURE_MODEL_NAME}"), model_name)
+        # endregion
 
     def __str__(self):
         return self.tree.__str__()
@@ -132,7 +165,7 @@ class ModelLib:
         为模型库添加新模型（三维四层初始结构）
         """
 
-    def create_new_model(self, model_name):
+    def create_new_model_old(self, model_name):
         """
         为模型库添加新模型（三维四层初始结构）
         :param model_name:模型名称

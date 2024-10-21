@@ -1,5 +1,7 @@
 import json
 import os
+from pathlib import Path
+
 from typing import Optional, Union, List, Dict, Any
 from abc import ABC, abstractmethod
 import pandas as pd
@@ -54,7 +56,17 @@ class ElementNode(NodeBase):
         # 如果找不到匹配的 group_name，返回 None
         return None
 
-    def get_parameter_list_name(self):
+    def get_parameter_name_list(self):
+        """
+        参数组名
+        :return:
+        """
+        rlist = []
+        for x in self.parameter_list:
+            rlist.append(x.get('parameters'))
+        return rlist
+
+    def get_parameter_group_name_list(self):
         """
         参数组名
         :return:
@@ -835,6 +847,8 @@ class Element(IndustryModel):
         return combined_templates
 
     def get_parameter_group_name_data(self, element_name, element_data_index, element_name_index):
+        node_list = self.tree.get_no_tag_nodes()[element_name_index]
+
         template = {
             'name': self.get_parameter_group_name_list_by_element_id(element_name),
             'parameters': self.get_parameter_name_data(element_data_index, element_name, element_name_index),
@@ -861,7 +875,6 @@ class Element(IndustryModel):
         r_list = []
         for element_data_index in range(len(self.model_data)):
             new_template = copy.deepcopy(template)
-            print(self.model_data[int(element_data_index)][element_name_index])
             new_template['name'] = self.model_data[int(element_data_index)][element_name_index]
             new_template['parameter_groups'] = self.get_parameter_group_name_data(element_name, element_data_index, element_name_index)
             r_list.append(new_template)
@@ -871,9 +884,7 @@ class Element(IndustryModel):
         template = {
             'element_index': 0,
             'name': '0',
-            'data': [
-
-            ]
+            'data': []
         }
 
         json_list = []
@@ -895,8 +906,41 @@ class Element(IndustryModel):
         r_json = {
             'tree': self.tree._tree_to_dict(),
             'model': self.model_to_dict()
+        }
+
+        return r_json
+
+    @staticmethod
+    def element_model_todict(data, node: ElementNode):
+        template = {
+            'element_index': 0,
+            'element_parent': node.parent.id if node.parent else None,
+            'element_name': node.id,
+            'element_desc': node.desc,
+            'element_data': data,
+            'element_parameter_groups': node.get_parameter_group_name_list(),
+            'element_parameters': node.get_parameter_name_list(),
+            'element_parameters_data': 'element_parameters'
+        }
+        return template
+
+    def to_json_flat(self):
+        """
+        获取单元模型所有数据（json)
+        :param data_list:数据列表
+        """
+        r_json = {
+            'tree': self.tree._tree_to_dict(),
+            'model': []
 
         }
+        a = self.tree.get_no_tag_nodes()
+        model_list = []
+        for i, v in enumerate(self.tree.get_no_tag_nodes()):
+            data = [x[i] for x in self.model_data]
+            model_list.append(self.element_model_todict(data, v))
+        r_json['model'] = model_list
+
         return r_json
 
 
@@ -1530,7 +1574,7 @@ class Procedure(IndustryModel):
         method_input = [p.get('parameters', []) for p in method_node.input_parameter_list]
         method_output_group_name = [p.get('group_name', []) for p in method_node.output_parameter_list]
         method_output = [p.get('parameters', []) for p in method_node.output_parameter_list]
-        element_input_group_name = [element_node.get_parameter_list_name() for element_node in element_node_list]
+        element_input_group_name = [element_node.get_parameter_group_name_list() for element_node in element_node_list]
         element_input = [element_node.get_data_list() for element_node in element_node_list]
         print(min([len(e) for e in element_input]))
         # 获取数据
@@ -1608,6 +1652,12 @@ class Model:
             "element": self.element.to_json(),
             "method": self.method.to_json(),
             "procedure": self.procedure.to_json(),
-
         }
+        current_working_directory = Path.cwd()
+        path = Path(current_working_directory)
+        # 指定保存路径
+        save_path = path / "data.json"
+        # 将数据写入文件
+        with save_path.open('w', encoding='utf-8') as f:
+            json.dump(r_json, f, ensure_ascii=False, indent=4)
         return json.dumps(r_json)
