@@ -1,8 +1,6 @@
 from typing import Optional
 
-from .utils import SnowflakeIDGenerator
-
-id_generator = SnowflakeIDGenerator(datacenter_id=1, worker_id=1)
+from imkernel.utils import idgen
 
 
 class Node:

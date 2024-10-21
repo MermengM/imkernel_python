@@ -3,7 +3,7 @@ from typing import Optional
 from .node_base import NodeBase
 
 
-class TreeBase:
+class Tree:
     def __init__(self):
         self.roots: dict[str, NodeBase] = {}  # 用于存储森林中的根节点
         self.nodes: dict[str, NodeBase] = {}  # 用于存储所有节点

@@ -44,6 +44,7 @@ class APIUtils:
         """获取所有model"""
         response = requests.get(f'{self.base_url}/get_all_model')
         if response.status_code == 200:
+            d = response.json()['data']
             return response.json()['data']
         else:
             raise Exception(f"获取模型失败: {response.text}")
@@ -84,7 +85,6 @@ class APIUtils:
             raise Exception(f"Failed to initialize tree: {response.text}")
 
     def trees(self):
-
         response = requests.get(f'{self.base_url}/trees')
         if response.status_code == 200:
             data = response.json()['data']
@@ -130,16 +130,3 @@ class APIUtils:
             return response.json()['message']
         else:
             raise Exception(f"Failed to create node: {response.text}")
-
-
-# Example usage
-if __name__ == "__main__":
-    api_utils = APIUtils("http://<your_api_server_host>:54742")
-    try:
-        print(api_utils.get_all_type())  # 获取所有类型
-        print(api_utils.get_all_model())  # 获取所有model
-        print(api_utils.get_all_supermodel())  # 获取所有supermodel
-        print(api_utils.tree_init())  # 初始化树
-        print(api_utils.create_node("ExampleNode", "example_type"))  # 创建节点
-    except Exception as e:
-        print(e)
