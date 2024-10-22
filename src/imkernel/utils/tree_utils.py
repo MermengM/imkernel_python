@@ -45,23 +45,23 @@ def dict_to_df(paths_dict, names, columns):
     return df
 
 
-def tree_to_df(tree, index_num=None, columns_num=None, index_levels=None, columns=None):
+def tree_to_df(tree, index_num=None, columns_num=None, index_levels=None, columns=None) -> pd.DataFrame:
     """
     获取从根节点到叶子节点的路径，并将ID替换为TAG，返回一个df。
     根据路径字典生成df，多级索引的层数可以根据用户输入的index_num选择。
     未选择的层级将作为值保留，columns_num决定列的数量。
-
-    :arg:
-    tree (Tree): treelib中的树结构。
-    index_num: 选择的多级索引层数，默认为路径的最大层数
-    columns_num: DataFrame列的数量，默认为None
-    index_levels: 多级索引的列名，默认使用 ['level_1', 'level_2', ..., 'level_n']
-    columns: 除未选择层级外的其他列名，默认为 ['column_1', 'column_2', ..., 'column_n']
-
-    返回:
-    df: 包含从根节点到叶子节点路径的DataFrame，路径以节点TAG表示。
-
     如果index_num超过路径层次或其他参数不匹配则报错。
+    Args:
+        tree (Tree): treelib中的树结构。
+        index_num: 选择的多级索引层数，默认为路径的最大层数
+        columns_num: DataFrame列的数量，默认为None
+        index_levels: 多级索引的列名，默认使用 ['level_1', 'level_2', ..., 'level_n']
+        columns: 除未选择层级外的其他列名，默认为 ['column_1', 'column_2', ..., 'column_n']
+
+    Returns:
+        包含从根节点到叶子节点路径的DataFrame，路径以节点TAG表示。
+
+
     """
     # 获取所有从根节点到叶子节点的路径
     paths = tree.paths_to_leaves()
