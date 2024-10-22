@@ -51,7 +51,7 @@ def tree_to_df(tree, index_num=None, columns_num=None, index_levels=None, column
     根据路径字典生成df，多级索引的层数可以根据用户输入的index_num选择。
     未选择的层级将作为值保留，columns_num决定列的数量。
 
-    参数:
+    :arg:
     tree (Tree): treelib中的树结构。
     index_num: 选择的多级索引层数，默认为路径的最大层数
     columns_num: DataFrame列的数量，默认为None
@@ -130,3 +130,38 @@ def tree_to_df(tree, index_num=None, columns_num=None, index_levels=None, column
     df = df.map(lambda x: None if pd.isna(x) else x)
 
     return df
+
+
+def df_to_tree(df) -> treelib.Tree:
+    """
+    将 DataFrame 的 MultiIndex 转换为树结构，并将行的值作为叶子节点添加到树中。
+    Args:
+        df(pd.DataFrame):包含 MultiIndex 的 DataFrame，其索引层次及对应的行值将被转换为树结构。
+
+    Returns:
+        返回由 DataFrame 的 MultiIndex 构建的树结构，并将行的值作为叶节点附加。
+
+    """
+    # 初始化树
+    tree = Tree()
+
+    # 遍历 DataFrame 的 MultiIndex，并附加行值作为叶节点
+    for idx_tuple, row_values in df.iterrows():
+        current_parent = None  # 没有根节点，直接从第一个索引级别开始
+        for i, level in enumerate(idx_tuple):
+            if pd.notna(level):  # 确保不处理 None 或 NaN 值
+                # 如果 current_parent 为空，说明这是树的顶层节点
+                if current_parent is None:
+                    if not tree.contains(level):
+                        tree.create_node(level, level)  # 顶层节点
+                else:
+                    if not tree.contains(level):
+                        tree.create_node(level, level, parent=current_parent)  # 子节点
+                current_parent = level
+
+        # 将行的所有值作为叶节点添加到树中
+        for i, value in enumerate(row_values):
+            if value is not None:
+                tree.create_node(tag=value, identifier=value, parent=current_parent)
+
+    return tree

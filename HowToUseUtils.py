@@ -1,4 +1,4 @@
-from imkernel.utils.tree_utils import tree_to_df
+from imkernel.utils.tree_utils import tree_to_df, df_to_tree
 from treelib import Tree
 
 # 示例树
@@ -26,4 +26,5 @@ columns = ['penson0', 'person1']
 # columns=None
 df = tree_to_df(tree=tree, index_num=4, columns_num=2, index_levels=index_levels, columns=columns)
 print(df)
-df
+new_tree = df_to_tree(df)
+print(new_tree)
